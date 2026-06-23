@@ -15,12 +15,17 @@ In an Addressables project, enable Addressables build layout generation before b
 After the report is generated:
 
 1. Open `Tools > Addressables Build Inspector`.
-2. Click `Load Build Layout`.
-3. Select the generated text report.
-4. Review the Overview and Duplicates tabs first.
+2. Click `Load Report`.
+3. Select the generated text or supported JSON report.
+4. Review the Overview, Duplicates, and Optimization tabs first.
+5. Use the toolbar `Location` filter to inspect Remote and Local bundles separately.
+6. Open Dependencies to inspect why assets are included.
+7. Open Build Diff to compare two generated reports.
 
 ## Recommended Workflow
 
-Use this tool after content builds and before release packaging. Start with the Duplicates tab, fix high-waste duplicated assets, rebuild Addressables content, then compare the new totals manually.
+Use this tool after content builds and before release packaging. Start with the Duplicates and Optimization tabs, fix high-waste duplicated assets, rebuild Addressables content, then compare the new totals.
 
-Build diff comparison is intentionally left as a future extension.
+Build Diff Analyzer can export CSV or JSON reports. Duplicate Optimization Advisor can export CSV, JSON, or Markdown reports.
+
+The tool restores the last successfully loaded report when the window is reopened and the file still exists. This is stored per editor user with `EditorPrefs`.

@@ -3,11 +3,18 @@
         <ui:VisualElement name="abi-toolbar" class="abi-toolbar" />
         <ui:Label name="abi-status-label" class="abi-status-label" />
         <ui:VisualElement name="abi-tab-bar" class="abi-tab-bar" />
+        <ui:VisualElement name="abi-filter-bar" class="abi-filter-bar">
+            <ui:Label text="Location" class="abi-filter-label" />
+            <ui:VisualElement name="abi-location-filter-group" class="abi-location-filter-group" />
+        </ui:VisualElement>
         <ui:VisualElement name="abi-content" class="abi-content">
             <ui:VisualElement name="abi-overview-tab" class="abi-tab-content" />
             <ui:VisualElement name="abi-bundles-tab" class="abi-tab-content" />
             <ui:VisualElement name="abi-assets-tab" class="abi-tab-content" />
             <ui:VisualElement name="abi-duplicates-tab" class="abi-tab-content" />
+            <ui:VisualElement name="abi-optimization-tab" class="abi-tab-content" />
+            <ui:VisualElement name="abi-dependencies-tab" class="abi-tab-content" />
+            <ui:VisualElement name="abi-build-diff-tab" class="abi-tab-content" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

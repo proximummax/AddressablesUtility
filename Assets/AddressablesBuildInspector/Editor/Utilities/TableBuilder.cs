@@ -22,12 +22,19 @@ namespace AddressablesBuildInspector.Editor.Utilities
             {
                 var button = new Button(column.Clicked)
                 {
-                    text = column.Title,
-                    tooltip = column.Tooltip
+                    text = column.Clicked == null ? column.Title : column.Title + " Sort",
+                    tooltip = string.IsNullOrEmpty(column.Tooltip) ? "Click to sort this column." : column.Tooltip
                 };
 
                 button.AddToClassList("abi-header-button");
+                if (column.Numeric)
+                {
+                    button.AddToClassList("abi-header-button-numeric");
+                }
+
                 button.style.flexGrow = column.FlexGrow;
+                button.style.flexBasis = 0;
+                button.style.minWidth = 0;
                 header.Add(button);
             }
 
@@ -66,6 +73,8 @@ namespace AddressablesBuildInspector.Editor.Utilities
             }
 
             label.style.flexGrow = flexGrow;
+            label.style.flexBasis = 0;
+            label.style.minWidth = 0;
             return label;
         }
 
@@ -94,12 +103,14 @@ namespace AddressablesBuildInspector.Editor.Utilities
         /// <param name="flexGrow">Relative column width.</param>
         /// <param name="clicked">Sort callback.</param>
         /// <param name="tooltip">Button tooltip.</param>
-        public TableColumnDefinition(string title, float flexGrow, Action clicked, string tooltip = "")
+        /// <param name="numeric">True when the column should be right-aligned.</param>
+        public TableColumnDefinition(string title, float flexGrow, Action clicked, string tooltip = "", bool numeric = false)
         {
             Title = title;
             FlexGrow = flexGrow;
             Clicked = clicked;
             Tooltip = tooltip;
+            Numeric = numeric;
         }
 
         /// <summary>
@@ -121,5 +132,10 @@ namespace AddressablesBuildInspector.Editor.Utilities
         /// Header tooltip.
         /// </summary>
         public string Tooltip { get; }
+
+        /// <summary>
+        /// True when the column should be right-aligned.
+        /// </summary>
+        public bool Numeric { get; }
     }
 }

@@ -20,3 +20,8 @@ Size: 768 KB
 Assets:
   Assets/UI/MainMenu.uxml | Size: 96 KB
   Assets/Shared/Icon.png | Size: 64 KB
+
+Dependencies:
+Dependency: Assets/Characters/Hero.prefab -> Assets/Shared/CommonMaterial.mat
+Dependency: Assets/Shared/CommonMaterial.mat -> Assets/Shared/Icon.png
+Dependency: Assets/UI/MainMenu.uxml -> Assets/Shared/Icon.png

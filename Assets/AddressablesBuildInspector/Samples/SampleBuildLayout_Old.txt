@@ -1,0 +1,13 @@
+Addressables Build Layout Report
+Sample old build for Build Diff Analyzer
+
+Bundle: characters.bundle
+Size: 1.00 MB
+Assets:
+  Assets/Characters/Hero.prefab | Size: 512 KB
+  Assets/Textures/Hero.png | Size: 256 KB
+
+Bundle: environment.bundle
+Size: 512 KB
+Assets:
+  Assets/Scenes/Forest.unity | Size: 512 KB

@@ -1,0 +1,15 @@
+Addressables Build Layout Report
+Sample new build for Build Diff Analyzer
+
+Bundle: characters.bundle
+Size: 2.00 MB
+Assets:
+  Assets/Characters/Hero.prefab | Size: 512 KB
+  Assets/Textures/Hero.png | Size: 1.00 MB
+  Assets/Textures/Boss.png | Size: 512 KB
+
+Bundle: ui.bundle
+Size: 512 KB
+Assets:
+  Assets/UI/MainMenu.uxml | Size: 128 KB
+  Assets/Textures/Hero.png | Size: 1.00 MB
