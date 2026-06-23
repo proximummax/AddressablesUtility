@@ -1,0 +1,190 @@
+.abi-root {
+    flex-grow: 1;
+    background-color: #f3f4f6;
+    color: #20252b;
+}
+
+.abi-toolbar {
+    min-height: 40px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-bottom-width: 1px;
+    border-bottom-color: #c8ced6;
+    background-color: #e9edf2;
+}
+
+.abi-load-button {
+    min-width: 132px;
+    height: 24px;
+}
+
+.abi-source-label {
+    flex-grow: 1;
+    margin-left: 8px;
+    margin-right: 8px;
+    color: #4b5563;
+    unity-text-align: middle-left;
+}
+
+.abi-search-field {
+    width: 240px;
+}
+
+.abi-status-label {
+    min-height: 28px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-bottom-width: 1px;
+    border-bottom-color: #d6dce4;
+    background-color: #f8fafc;
+    color: #4b5563;
+    white-space: normal;
+}
+
+.abi-status-error {
+    background-color: #fff1f0;
+    color: #9f1d16;
+}
+
+.abi-status-success {
+    background-color: #eff8f1;
+    color: #1f6f36;
+}
+
+.abi-tab-bar {
+    min-height: 35px;
+    flex-direction: row;
+    align-items: flex-end;
+    padding-left: 8px;
+    padding-top: 6px;
+    background-color: #ffffff;
+    border-bottom-width: 1px;
+    border-bottom-color: #d6dce4;
+}
+
+.abi-tab-button {
+    height: 29px;
+    min-width: 92px;
+    margin-right: 3px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.abi-tab-button-active {
+    background-color: #f3f4f6;
+    color: #0f5965;
+    -unity-font-style: bold;
+}
+
+.abi-content {
+    flex-grow: 1;
+}
+
+.abi-tab-content {
+    flex-grow: 1;
+    padding: 10px;
+}
+
+.abi-hidden {
+    display: none;
+}
+
+.abi-overview-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.abi-stat-card {
+    min-width: 190px;
+    max-width: 260px;
+    height: 82px;
+    flex-grow: 1;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    padding: 10px;
+    border-width: 1px;
+    border-color: #d6dce4;
+    border-radius: 6px;
+    background-color: #ffffff;
+}
+
+.abi-stat-label {
+    color: #667085;
+    font-size: 11px;
+    -unity-font-style: bold;
+}
+
+.abi-stat-value {
+    margin-top: 6px;
+    color: #17202a;
+    font-size: 18px;
+    -unity-font-style: bold;
+    white-space: normal;
+}
+
+.abi-table-header {
+    height: 30px;
+    flex-direction: row;
+    border-width: 1px;
+    border-color: #cfd6df;
+    background-color: #e8edf3;
+}
+
+.abi-header-button {
+    height: 28px;
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 0;
+    -unity-font-style: bold;
+}
+
+.abi-list-view {
+    flex-grow: 1;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: #cfd6df;
+    border-right-color: #cfd6df;
+    border-bottom-color: #cfd6df;
+    background-color: #ffffff;
+}
+
+.abi-table-row {
+    height: 30px;
+    flex-direction: row;
+    align-items: center;
+    border-bottom-width: 1px;
+    border-bottom-color: #edf0f4;
+}
+
+.abi-row-warning {
+    background-color: #fff7ed;
+}
+
+.abi-cell {
+    padding-left: 8px;
+    padding-right: 8px;
+    unity-text-align: middle-left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.abi-cell-number {
+    unity-text-align: middle-right;
+}
+
+.abi-cell-danger {
+    color: #b42318;
+    -unity-font-style: bold;
+}
+
+.abi-empty-state {
+    padding: 18px;
+    color: #667085;
+    white-space: normal;
+}
