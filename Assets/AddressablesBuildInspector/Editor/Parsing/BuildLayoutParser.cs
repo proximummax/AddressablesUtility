@@ -95,6 +95,8 @@ namespace AddressablesBuildInspector.Editor.Parsing
                         currentBundle.SizeBytes = bundleSizeBytes;
                     }
 
+                    currentBundle.Location = ResolveBundleLocation(line, currentBundle.Location);
+
                     continue;
                 }
 
@@ -103,6 +105,13 @@ namespace AddressablesBuildInspector.Editor.Parsing
                     TryParseStandaloneSizeLine(line, out long standaloneBundleSizeBytes))
                 {
                     currentBundle.SizeBytes = standaloneBundleSizeBytes;
+                    continue;
+                }
+
+                if (currentBundle != null &&
+                    TryParseBundleLocationLine(line, currentBundle.Location, out BundleLocation bundleLocation))
+                {
+                    currentBundle.Location = bundleLocation;
                     continue;
                 }
 
@@ -200,6 +209,20 @@ namespace AddressablesBuildInspector.Editor.Parsing
                 return dependency.Length > 0;
             }
 
+            if (line.IndexOf("->", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                ContainsAssetPath(line))
+            {
+                dependency = line;
+                return true;
+            }
+
+            if (line.IndexOf("depends on", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                ContainsAssetPath(line))
+            {
+                dependency = line;
+                return true;
+            }
+
             return false;
         }
 
@@ -246,6 +269,28 @@ namespace AddressablesBuildInspector.Editor.Parsing
 
             bundleName = candidate;
             return true;
+        }
+
+        private static BundleLocation ResolveBundleLocation(string line, BundleLocation current)
+        {
+            BundleLocation resolved = BundleLocationResolver.ResolveFromLoadPath(line);
+            return resolved == BundleLocation.Unknown ? current : resolved;
+        }
+
+        private static bool TryParseBundleLocationLine(string line, BundleLocation current, out BundleLocation location)
+        {
+            location = current;
+            if (!line.StartsWith("Load Path", StringComparison.OrdinalIgnoreCase) &&
+                !line.StartsWith("Location", StringComparison.OrdinalIgnoreCase) &&
+                !line.StartsWith("Bundle Location", StringComparison.OrdinalIgnoreCase) &&
+                line.IndexOf("http://", StringComparison.OrdinalIgnoreCase) < 0 &&
+                line.IndexOf("https://", StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                return false;
+            }
+
+            location = ResolveBundleLocation(line, current);
+            return location != current;
         }
 
         private static bool TryParseStandaloneSizeLine(string line, out long sizeBytes)

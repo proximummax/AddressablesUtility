@@ -25,12 +25,22 @@ namespace AddressablesBuildInspector.Editor.Services
         /// <returns>Parse result. A canceled picker returns a failed result with an empty message.</returns>
         public BuildLayoutParseResult LoadFromUserSelection()
         {
-            string path = EditorUtility.OpenFilePanel("Load Build Layout Report", string.Empty, "txt");
+            string path = EditorUtility.OpenFilePanel("Load Build Layout Report", string.Empty, "txt,json");
             if (string.IsNullOrEmpty(path))
             {
                 return BuildLayoutParseResult.Failed(string.Empty);
             }
 
+            return _parser.Parse(path);
+        }
+
+        /// <summary>
+        /// Parses a report at a known path without showing a file picker.
+        /// </summary>
+        /// <param name="path">Report path.</param>
+        /// <returns>Parse result.</returns>
+        public BuildLayoutParseResult LoadFromPath(string path)
+        {
             return _parser.Parse(path);
         }
     }
