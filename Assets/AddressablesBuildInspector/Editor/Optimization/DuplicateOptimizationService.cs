@@ -12,13 +12,15 @@ namespace AddressablesBuildInspector.Editor.Optimization
     public sealed class DuplicateOptimizationService
     {
         private readonly OptimizationAnalyzer _analyzer;
+        private readonly DependencyPathTracer _pathTracer;
 
         /// <summary>
         /// Creates an optimization service from a dependency graph.
         /// </summary>
         public DuplicateOptimizationService(DependencyGraphService graphService)
         {
-            _analyzer = new OptimizationAnalyzer(graphService);
+            _pathTracer = new DependencyPathTracer(graphService);
+            _analyzer = new OptimizationAnalyzer(graphService, pathTracer: _pathTracer, includeDependencyPaths: false);
         }
 
         /// <summary>
@@ -27,6 +29,19 @@ namespace AddressablesBuildInspector.Editor.Optimization
         public OptimizationReport Analyze(BuildReportData report)
         {
             return _analyzer.Analyze(report);
+        }
+
+        /// <summary>
+        /// Populates dependency paths for a single optimization candidate on demand.
+        /// </summary>
+        public void PopulateDependencyPaths(OptimizationCandidate candidate)
+        {
+            if (candidate == null || candidate.DependencyPaths.Count > 0)
+            {
+                return;
+            }
+
+            candidate.DependencyPaths.AddRange(_pathTracer.TracePaths(candidate.Asset));
         }
 
         /// <summary>

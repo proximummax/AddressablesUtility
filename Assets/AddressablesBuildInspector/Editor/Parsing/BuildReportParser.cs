@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using AddressablesBuildInspector.Editor.Services;
 
 namespace AddressablesBuildInspector.Editor.Parsing
 {
@@ -11,8 +10,8 @@ namespace AddressablesBuildInspector.Editor.Parsing
     {
         private readonly BuildLayoutParser _textParser = new BuildLayoutParser();
         private readonly BuildReportJsonParser _customJsonParser = new BuildReportJsonParser();
-        private readonly UnityNativeBuildLayoutJsonParser _unityNativeJsonParser = new UnityNativeBuildLayoutJsonParser();
-        private readonly BundleLocationEnrichmentService _locationEnrichmentService = new BundleLocationEnrichmentService();
+        private readonly UnityNativeBuildLayoutJsonParser _unityNativeJsonParser = new UnityNativeBuildLayoutJsonParser(false);
+        private readonly UnityNativeBuildLayoutJsonParser _unityNativeJsonDependencyParser = new UnityNativeBuildLayoutJsonParser(true);
 
         /// <inheritdoc />
         public BuildLayoutParseResult Parse(string filePath)
@@ -22,22 +21,54 @@ namespace AddressablesBuildInspector.Editor.Parsing
                 return BuildLayoutParseResult.Failed("Select a Build Layout report file.");
             }
 
-            BuildLayoutParseResult result;
             if (IsJsonFile(filePath))
             {
-                result = ParseJson(filePath);
-            }
-            else
-            {
-                result = _textParser.Parse(filePath);
+                return ParseJson(filePath);
             }
 
-            if (result.Success)
+            return _textParser.Parse(filePath);
+        }
+
+        /// <summary>
+        /// Parses a report with dependency graph extraction enabled.
+        /// </summary>
+        /// <param name="filePath">Report path.</param>
+        /// <returns>Parse result with dependency lines populated when available.</returns>
+        public BuildLayoutParseResult ParseWithDependencies(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
             {
-                _locationEnrichmentService.Enrich(result.Report);
+                return BuildLayoutParseResult.Failed("Select a Build Layout report file.");
             }
 
-            return result;
+            if (IsJsonFile(filePath) &&
+                UnityNativeBuildLayoutJsonParser.LooksLikeUnityNativeBuildLayout(filePath))
+            {
+                return _unityNativeJsonDependencyParser.Parse(filePath);
+            }
+
+            return Parse(filePath);
+        }
+
+        /// <summary>
+        /// Parses dependency data without invoking Unity editor APIs. Intended for background loading.
+        /// </summary>
+        /// <param name="filePath">Report path.</param>
+        /// <returns>Parse result with dependency lines populated when available.</returns>
+        public BuildLayoutParseResult ParseWithDependenciesForBackground(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                return BuildLayoutParseResult.Failed("Select a Build Layout report file.");
+            }
+
+            if (IsJsonFile(filePath) &&
+                UnityNativeBuildLayoutJsonParser.LooksLikeUnityNativeBuildLayout(filePath))
+            {
+                return UnityNativeBuildLayoutJsonParser.ParseViaTextExtractionOnly(filePath, true);
+            }
+
+            return Parse(filePath);
         }
 
         private BuildLayoutParseResult ParseJson(string filePath)

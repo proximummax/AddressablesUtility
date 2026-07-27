@@ -62,31 +62,6 @@ namespace AddressablesBuildInspector.Editor.Tests
             StringAssert.Contains("recognized", result.ErrorMessage.ToLowerInvariant());
         }
 
-        [Test]
-        public void Parse_InfersBundleLocationFromLoadPathLine()
-        {
-            string path = WriteTempReport(
-                "Addressables Build Layout Report",
-                "Bundle: remote_content.bundle",
-                "Load Path: https://cdn.example.com/Android/remote_content.bundle",
-                "Size: 1.00 MB",
-                "Assets:",
-                "  Assets/Remote/Hero.prefab | Size: 512 KB",
-                "Bundle: local_content.bundle",
-                "Load Path: {UnityEngine.AddressableAssets.Addressables.RuntimePath}/Android/local_content.bundle",
-                "Size: 512 KB",
-                "Assets:",
-                "  Assets/Local/Hero.prefab | Size: 256 KB");
-
-            var parser = new BuildReportParser();
-
-            BuildLayoutParseResult result = parser.Parse(path);
-
-            Assert.IsTrue(result.Success, result.ErrorMessage);
-            Assert.AreEqual(BundleLocation.Remote, result.Report.Bundles.Single(bundle => bundle.Name == "remote_content.bundle").Location);
-            Assert.AreEqual(BundleLocation.Local, result.Report.Bundles.Single(bundle => bundle.Name == "local_content.bundle").Location);
-        }
-
         private static string WriteTempReport(params string[] lines)
         {
             string path = Path.Combine(Application.temporaryCachePath, Path.GetRandomFileName() + ".txt");

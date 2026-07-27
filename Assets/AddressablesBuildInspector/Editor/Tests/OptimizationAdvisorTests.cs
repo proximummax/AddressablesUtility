@@ -13,9 +13,9 @@ namespace AddressablesBuildInspector.Editor.Tests
         {
             BuildReportData report = CreateReport();
             var graph = new DependencyGraphService(report, new BuildLayoutDependencyProvider(report));
-            var analyzer = new OptimizationAnalyzer(graph);
+            var service = new DuplicateOptimizationService(graph);
 
-            OptimizationReport optimization = analyzer.Analyze(report);
+            OptimizationReport optimization = service.Analyze(report);
             OptimizationCandidate candidate = optimization.Candidates.First();
 
             Assert.AreEqual("Assets/Textures/HeroTexture.png", candidate.Asset.Path);
@@ -24,6 +24,10 @@ namespace AddressablesBuildInspector.Editor.Tests
             Assert.AreEqual(DuplicateCause.SharedTextureAcrossGroups, candidate.Cause);
             Assert.AreEqual(OptimizationRecommendation.MoveToSharedGroup, candidate.Recommendation);
             Assert.AreEqual(200, candidate.Impact.PotentialSavingsBytes);
+            Assert.AreEqual(0, candidate.DependencyPaths.Count);
+
+            service.PopulateDependencyPaths(candidate);
+
             Assert.IsNotEmpty(candidate.DependencyPaths);
         }
 

@@ -22,7 +22,7 @@ namespace AddressablesBuildInspector.Editor.Utilities
             {
                 var button = new Button(column.Clicked)
                 {
-                    text = column.Clicked == null ? column.Title : column.Title + " Sort",
+                    text = column.Title,
                     tooltip = string.IsNullOrEmpty(column.Tooltip) ? "Click to sort this column." : column.Tooltip
                 };
 

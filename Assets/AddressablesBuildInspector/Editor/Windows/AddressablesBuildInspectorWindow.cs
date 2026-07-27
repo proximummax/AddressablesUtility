@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using AddressablesBuildInspector.Editor.AI;
 using AddressablesBuildInspector.Editor.Analysis;
 using AddressablesBuildInspector.Editor.Dependencies;
 using AddressablesBuildInspector.Editor.Diff;
@@ -27,9 +29,7 @@ namespace AddressablesBuildInspector.Editor.Windows
         private const string UxmlPath = "Assets/AddressablesBuildInspector/Editor/UI/AddressablesBuildInspectorWindow.uxml";
         private const string UssPath = "Assets/AddressablesBuildInspector/Editor/UI/AddressablesBuildInspectorWindow.uss";
         private const string LastReportPathEditorPrefsKey = "AddressablesBuildInspector.LastReportPath";
-        private const string LocationFilterAll = "All";
-        private const string LocationFilterRemote = "Remote";
-        private const string LocationFilterLocal = "Local";
+        private const int LoadingAnimationIntervalMs = 33;
 
         private readonly List<BundleData> _allBundles = new List<BundleData>();
         private readonly List<BundleData> _visibleBundles = new List<BundleData>();
@@ -41,13 +41,15 @@ namespace AddressablesBuildInspector.Editor.Windows
         private readonly List<OptimizationCandidate> _visibleOptimizationCandidates = new List<OptimizationCandidate>();
         private readonly List<BundleDiff> _visibleBundleDiffs = new List<BundleDiff>();
         private readonly List<AssetDiff> _visibleAssetDiffs = new List<AssetDiff>();
-        private readonly Dictionary<string, BundleLocation> _bundleLocationsByName = new Dictionary<string, BundleLocation>(StringComparer.OrdinalIgnoreCase);
 
+        private BuildReportParser _parser;
         private BuildLayoutReportLoader _loader;
         private BuildDiffService _buildDiffService;
         private DiffExportService _diffExportService;
         private DuplicateOptimizationService _optimizationService;
         private OptimizationReportExportService _optimizationExportService;
+        private AiPromptGenerator _aiPromptGenerator;
+        private AiPromptExporter _aiPromptExporter;
         private BuildReportData _report;
         private BuildDiffReport _diffReport;
         private OptimizationReport _optimizationReport;
@@ -56,7 +58,6 @@ namespace AddressablesBuildInspector.Editor.Windows
         private DependencyTreeBuilder _dependencyTreeBuilder;
         private ActiveTab _activeTab = ActiveTab.Overview;
         private string _searchQuery = string.Empty;
-        private string _locationFilter = LocationFilterAll;
 
         private Label _statusLabel;
         private Label _sourceLabel;
@@ -69,6 +70,7 @@ namespace AddressablesBuildInspector.Editor.Windows
         private VisualElement _optimizationContainer;
         private VisualElement _dependenciesContainer;
         private VisualElement _buildDiffContainer;
+        private VisualElement _aiReportContainer;
         private Button _overviewTabButton;
         private Button _bundlesTabButton;
         private Button _assetsTabButton;
@@ -76,16 +78,13 @@ namespace AddressablesBuildInspector.Editor.Windows
         private Button _optimizationTabButton;
         private Button _dependenciesTabButton;
         private Button _buildDiffTabButton;
+        private Button _aiReportTabButton;
         private Label _bundlesEmptyState;
         private Label _assetsEmptyState;
         private Label _duplicatesEmptyState;
         private ListView _bundlesListView;
         private ListView _assetsListView;
         private ListView _duplicatesListView;
-        private VisualElement _locationFilterBar;
-        private Button _locationFilterAllButton;
-        private Button _locationFilterRemoteButton;
-        private Button _locationFilterLocalButton;
         private VisualElement _optimizationDashboardContainer;
         private VisualElement _optimizationInsightsContainer;
         private VisualElement _optimizationDetailsContainer;
@@ -106,6 +105,12 @@ namespace AddressablesBuildInspector.Editor.Windows
         private ListView _assetDiffListView;
         private Label _bundleDiffEmptyState;
         private Label _assetDiffEmptyState;
+        private PopupField<AiReportMode> _aiReportModeField;
+        private Label _aiReportModeDescriptionLabel;
+        private TextField _aiReportPreviewField;
+        private VisualElement _aiReportOutputContainer;
+        private ScrollView _aiReportScrollView;
+        private string _generatedAiPrompt = string.Empty;
         private string _oldBuildPath = string.Empty;
         private string _newBuildPath = string.Empty;
 
@@ -117,6 +122,18 @@ namespace AddressablesBuildInspector.Editor.Windows
         private bool _assetSortAscending;
         private bool _duplicateSortAscending;
         private bool _optimizationSortAscending;
+        private bool _optimizationGenerationQueued;
+        private bool _optimizationGenerationInProgress;
+        private bool _dependencyLoadQueued;
+        private bool _dependencyLoadInProgress;
+        private Task<BuildLayoutParseResult> _dependencyLoadTask;
+        private string _dependencyLoadSourcePath = string.Empty;
+        private bool _aiReportGenerationQueued;
+        private bool _aiReportGenerationInProgress;
+        private bool _generateAiReportAfterDependencyLoad;
+        private Task<AiReportGenerationResult> _aiReportGenerationTask;
+        private string _aiReportGenerationSourcePath = string.Empty;
+        private AiReportMode _queuedAiReportMode;
 
         private enum ActiveTab
         {
@@ -124,15 +141,15 @@ namespace AddressablesBuildInspector.Editor.Windows
             Bundles,
             Assets,
             Duplicates,
-            Optimization,
             Dependencies,
-            BuildDiff
+            BuildDiff,
+            Optimization,
+            AIReport
         }
 
         private enum BundleSortColumn
         {
             Name,
-            Location,
             Size,
             AssetCount
         }
@@ -180,18 +197,19 @@ namespace AddressablesBuildInspector.Editor.Windows
         public void CreateGUI()
         {
             titleContent = new GUIContent(WindowTitle);
-            var parser = new BuildReportParser();
-            _loader = new BuildLayoutReportLoader(parser);
-            _buildDiffService = new BuildDiffService(parser);
+            _parser = new BuildReportParser();
+            _loader = new BuildLayoutReportLoader(_parser);
+            _buildDiffService = new BuildDiffService(_parser);
             _diffExportService = new DiffExportService();
             _optimizationExportService = new OptimizationReportExportService();
+            _aiPromptGenerator = new AiPromptGenerator();
+            _aiPromptExporter = new AiPromptExporter();
 
             rootVisualElement.Clear();
             LoadVisualTree();
             CacheElements();
             BuildToolbar();
             BuildTabs();
-            BuildLocationFilterBar();
             BuildTables();
             SetActiveTab(ActiveTab.Overview);
             ShowStatus("Load a Build Layout report to begin.", StatusKind.Neutral);
@@ -228,20 +246,15 @@ namespace AddressablesBuildInspector.Editor.Windows
             root.Add(new Label { name = "abi-status-label" });
             root.Add(new VisualElement { name = "abi-tab-bar" });
 
-            var filterBar = new VisualElement { name = "abi-filter-bar" };
-            filterBar.AddToClassList("abi-filter-bar");
-            filterBar.Add(new Label { text = "Location" });
-            filterBar.Add(new VisualElement { name = "abi-location-filter-group" });
-            root.Add(filterBar);
-
             var content = new VisualElement { name = "abi-content" };
             content.Add(new VisualElement { name = "abi-overview-tab" });
             content.Add(new VisualElement { name = "abi-bundles-tab" });
             content.Add(new VisualElement { name = "abi-assets-tab" });
             content.Add(new VisualElement { name = "abi-duplicates-tab" });
-            content.Add(new VisualElement { name = "abi-optimization-tab" });
             content.Add(new VisualElement { name = "abi-dependencies-tab" });
             content.Add(new VisualElement { name = "abi-build-diff-tab" });
+            content.Add(new VisualElement { name = "abi-optimization-tab" });
+            content.Add(new VisualElement { name = "abi-ai-report-tab" });
             root.Add(content);
 
             rootVisualElement.Add(root);
@@ -258,6 +271,7 @@ namespace AddressablesBuildInspector.Editor.Windows
             _optimizationContainer = rootVisualElement.Q<VisualElement>("abi-optimization-tab");
             _dependenciesContainer = rootVisualElement.Q<VisualElement>("abi-dependencies-tab");
             _buildDiffContainer = rootVisualElement.Q<VisualElement>("abi-build-diff-tab");
+            _aiReportContainer = rootVisualElement.Q<VisualElement>("abi-ai-report-tab");
         }
 
         private void BuildToolbar()
@@ -272,6 +286,22 @@ namespace AddressablesBuildInspector.Editor.Windows
                 tooltip = "Select an Addressables Build Layout text or JSON report."
             };
             loadButton.AddToClassList("abi-load-button");
+
+            var clearButton = new Button(ClearReport)
+            {
+                text = "Clear",
+                tooltip = "Reset the inspector to its default empty state."
+            };
+            clearButton.AddToClassList("abi-clear-button");
+
+            var titleBlock = new VisualElement();
+            titleBlock.AddToClassList("abi-title-block");
+            var title = new Label("Addressables Build Inspector");
+            title.AddToClassList("abi-window-title");
+            var subtitle = new Label("Build size, duplicate waste, dependencies, and optimization ROI");
+            subtitle.AddToClassList("abi-window-subtitle");
+            titleBlock.Add(title);
+            titleBlock.Add(subtitle);
 
             _sourceLabel = new Label("No report loaded");
             _sourceLabel.AddToClassList("abi-source-label");
@@ -289,54 +319,10 @@ namespace AddressablesBuildInspector.Editor.Windows
             });
 
             toolbar.Add(loadButton);
+            toolbar.Add(clearButton);
+            toolbar.Add(titleBlock);
             toolbar.Add(_sourceLabel);
             toolbar.Add(_searchField);
-        }
-
-        private void BuildLocationFilterBar()
-        {
-            _locationFilterBar = rootVisualElement.Q<VisualElement>("abi-filter-bar");
-            VisualElement group = rootVisualElement.Q<VisualElement>("abi-location-filter-group");
-            group.Clear();
-
-            _locationFilterAllButton = CreateLocationFilterButton(LocationFilterAll);
-            _locationFilterRemoteButton = CreateLocationFilterButton(LocationFilterRemote);
-            _locationFilterLocalButton = CreateLocationFilterButton(LocationFilterLocal);
-
-            group.Add(_locationFilterAllButton);
-            group.Add(_locationFilterRemoteButton);
-            group.Add(_locationFilterLocalButton);
-
-            SetLocationFilter(LocationFilterAll, refreshTable: false);
-        }
-
-        private Button CreateLocationFilterButton(string filter)
-        {
-            var button = new Button(() => SetLocationFilter(filter))
-            {
-                text = filter,
-                tooltip = "Filter table rows by local or remote Addressables bundles."
-            };
-            button.AddToClassList("abi-location-filter-button");
-            return button;
-        }
-
-        private void SetLocationFilter(string filter, bool refreshTable = true)
-        {
-            _locationFilter = filter ?? LocationFilterAll;
-            SetLocationFilterButtonState(_locationFilterAllButton, string.Equals(_locationFilter, LocationFilterAll, StringComparison.OrdinalIgnoreCase));
-            SetLocationFilterButtonState(_locationFilterRemoteButton, string.Equals(_locationFilter, LocationFilterRemote, StringComparison.OrdinalIgnoreCase));
-            SetLocationFilterButtonState(_locationFilterLocalButton, string.Equals(_locationFilter, LocationFilterLocal, StringComparison.OrdinalIgnoreCase));
-
-            if (refreshTable)
-            {
-                RefreshActiveTable();
-            }
-        }
-
-        private static void SetLocationFilterButtonState(Button button, bool active)
-        {
-            button.EnableInClassList("abi-location-filter-button-active", active);
         }
 
         private void BuildTabs()
@@ -348,17 +334,19 @@ namespace AddressablesBuildInspector.Editor.Windows
             _bundlesTabButton = CreateTabButton("Bundles", ActiveTab.Bundles);
             _assetsTabButton = CreateTabButton("Assets", ActiveTab.Assets);
             _duplicatesTabButton = CreateTabButton("Duplicates", ActiveTab.Duplicates);
-            _optimizationTabButton = CreateTabButton("Optimization", ActiveTab.Optimization);
             _dependenciesTabButton = CreateTabButton("Dependencies", ActiveTab.Dependencies);
             _buildDiffTabButton = CreateTabButton("Build Diff", ActiveTab.BuildDiff);
+            _optimizationTabButton = CreateTabButton("Optimization", ActiveTab.Optimization);
+            _aiReportTabButton = CreateTabButton("AI Report", ActiveTab.AIReport);
 
             _tabBar.Add(_overviewTabButton);
             _tabBar.Add(_bundlesTabButton);
             _tabBar.Add(_assetsTabButton);
             _tabBar.Add(_duplicatesTabButton);
-            _tabBar.Add(_optimizationTabButton);
             _tabBar.Add(_dependenciesTabButton);
             _tabBar.Add(_buildDiffTabButton);
+            _tabBar.Add(_optimizationTabButton);
+            _tabBar.Add(_aiReportTabButton);
         }
 
         private Button CreateTabButton(string title, ActiveTab tab)
@@ -379,6 +367,7 @@ namespace AddressablesBuildInspector.Editor.Windows
             BuildOptimizationView();
             BuildDependenciesView();
             BuildDiffView();
+            BuildAiReportView();
         }
 
         private void BuildBundlesTable()
@@ -386,7 +375,6 @@ namespace AddressablesBuildInspector.Editor.Windows
             _bundlesContainer.Clear();
             _bundlesContainer.Add(TableBuilder.CreateHeader(
                 new TableColumnDefinition("Bundle Name", 5f, () => ToggleBundleSort(BundleSortColumn.Name), "Sort by bundle name"),
-                new TableColumnDefinition("Location", 1.1f, () => ToggleBundleSort(BundleSortColumn.Location), "Sort by local or remote location"),
                 new TableColumnDefinition("Size", 1.4f, () => ToggleBundleSort(BundleSortColumn.Size), "Sort by bundle size", numeric: true),
                 new TableColumnDefinition("Asset Count", 1.2f, () => ToggleBundleSort(BundleSortColumn.AssetCount), "Sort by asset count", numeric: true)));
 
@@ -439,25 +427,32 @@ namespace AddressablesBuildInspector.Editor.Windows
             var exportCsvButton = new Button(() => ExportOptimization("csv")) { text = "Export CSV" };
             var exportJsonButton = new Button(() => ExportOptimization("json")) { text = "Export JSON" };
             var exportMarkdownButton = new Button(() => ExportOptimization("md")) { text = "Export Markdown" };
+            var fixPlanPromptButton = new Button(GenerateFixPlanPrompt) { text = "Generate Fix Plan Prompt" };
+            fixPlanPromptButton.tooltip = "Generate and copy an implementation-plan prompt for the current optimization report.";
             controls.Add(exportCsvButton);
             controls.Add(exportJsonButton);
             controls.Add(exportMarkdownButton);
+            controls.Add(fixPlanPromptButton);
             _optimizationContainer.Add(controls);
 
             _optimizationDashboardContainer = new VisualElement();
             _optimizationDashboardContainer.AddToClassList("abi-overview-grid");
+            _optimizationDashboardContainer.AddToClassList("abi-kpi-row");
             _optimizationContainer.Add(_optimizationDashboardContainer);
 
+            var insightsScrollView = new ScrollView();
+            insightsScrollView.AddToClassList("abi-optimization-insights-scroll");
             _optimizationInsightsContainer = new VisualElement();
             _optimizationInsightsContainer.AddToClassList("abi-optimization-insights");
-            _optimizationContainer.Add(_optimizationInsightsContainer);
+            insightsScrollView.Add(_optimizationInsightsContainer);
+            _optimizationContainer.Add(insightsScrollView);
 
             var tableLayout = new VisualElement();
             tableLayout.AddToClassList("abi-optimization-layout");
 
             var candidatePanel = new VisualElement();
             candidatePanel.AddToClassList("abi-optimization-table-panel");
-            candidatePanel.Add(CreatePaneHeading("Optimization Candidates"));
+            candidatePanel.Add(CreateSectionTitle("Optimization Candidates", "Ranked by duplicate waste, potential savings, severity, and implementation ROI."));
             candidatePanel.Add(TableBuilder.CreateHeader(
                 new TableColumnDefinition("Asset", 3f, () => ToggleOptimizationSort(OptimizationSortColumn.Asset), "Sort by asset"),
                 new TableColumnDefinition("Bundles", 0.9f, () => ToggleOptimizationSort(OptimizationSortColumn.BundleCount), "Sort by bundle count", numeric: true),
@@ -473,12 +468,16 @@ namespace AddressablesBuildInspector.Editor.Windows
             _optimizationListView.selectionChanged += OnOptimizationSelectionChanged;
             candidatePanel.Add(_optimizationListView);
 
+            var detailsScrollView = new ScrollView();
+            detailsScrollView.AddToClassList("abi-optimization-details-scroll");
             _optimizationDetailsContainer = new VisualElement();
             _optimizationDetailsContainer.AddToClassList("abi-optimization-details");
+            _optimizationDetailsContainer.Add(CreateSectionTitle("Candidate Details", "Select a row to inspect cause, affected bundles, and dependency paths."));
             _optimizationDetailsContainer.Add(TableBuilder.CreateEmptyState("Select a candidate to inspect cause, dependency paths, and simulated savings."));
+            detailsScrollView.Add(_optimizationDetailsContainer);
 
             tableLayout.Add(candidatePanel);
-            tableLayout.Add(_optimizationDetailsContainer);
+            tableLayout.Add(detailsScrollView);
             _optimizationContainer.Add(tableLayout);
 
             RenderOptimizationDashboard();
@@ -579,9 +578,12 @@ namespace AddressablesBuildInspector.Editor.Windows
             _diffOverviewContainer.AddToClassList("abi-diff-overview");
             _buildDiffContainer.Add(_diffOverviewContainer);
 
+            var diffInsightsScrollView = new ScrollView();
+            diffInsightsScrollView.AddToClassList("abi-diff-insights-scroll");
             _diffInsightsContainer = new VisualElement();
             _diffInsightsContainer.AddToClassList("abi-diff-insights");
-            _buildDiffContainer.Add(_diffInsightsContainer);
+            diffInsightsScrollView.Add(_diffInsightsContainer);
+            _buildDiffContainer.Add(diffInsightsScrollView);
 
             var tableLayout = new VisualElement();
             tableLayout.AddToClassList("abi-diff-table-layout");
@@ -620,12 +622,89 @@ namespace AddressablesBuildInspector.Editor.Windows
             tableLayout.Add(assetPanel);
             _buildDiffContainer.Add(tableLayout);
 
+            var growthScrollView = new ScrollView();
+            growthScrollView.AddToClassList("abi-diff-growth-scroll");
             _diffGrowthDetailsContainer = new VisualElement();
             _diffGrowthDetailsContainer.AddToClassList("abi-diff-growth-details");
-            _buildDiffContainer.Add(_diffGrowthDetailsContainer);
+            growthScrollView.Add(_diffGrowthDetailsContainer);
+            _buildDiffContainer.Add(growthScrollView);
 
             RenderDiffOverview();
             RefreshDiffTables();
+        }
+
+        private void BuildAiReportView()
+        {
+            _aiReportContainer.Clear();
+
+            var header = new VisualElement();
+            header.AddToClassList("abi-ai-header");
+
+            var controls = new VisualElement();
+            controls.AddToClassList("abi-ai-controls");
+
+            _aiReportModeField = new PopupField<AiReportMode>(
+                "Report Type",
+                new List<AiReportMode>
+                {
+                    AiReportMode.QuickReview,
+                    AiReportMode.OptimizationConsultant,
+                    AiReportMode.BuildGrowthInvestigation,
+                    AiReportMode.DuplicateInvestigation,
+                    AiReportMode.TechnicalAudit
+                },
+                AiReportMode.OptimizationConsultant);
+            _aiReportModeField.AddToClassList("abi-ai-mode-field");
+            _aiReportModeField.RegisterValueChangedCallback(evt => UpdateAiReportModeDescription(evt.newValue));
+
+            var generateButton = new Button(GenerateAiReport) { text = "Generate Report" };
+            generateButton.AddToClassList("abi-ai-action-button");
+            var copyButton = new Button(CopyAiReportToClipboard) { text = "Copy" };
+            copyButton.AddToClassList("abi-ai-action-button");
+            var exportTxtButton = new Button(() => ExportAiReport("txt")) { text = "Export TXT" };
+            exportTxtButton.AddToClassList("abi-ai-action-button");
+            var exportMarkdownButton = new Button(() => ExportAiReport("md")) { text = "Export Markdown" };
+            exportMarkdownButton.AddToClassList("abi-ai-action-button-wide");
+
+            controls.Add(_aiReportModeField);
+            controls.Add(generateButton);
+            controls.Add(copyButton);
+            controls.Add(exportTxtButton);
+            controls.Add(exportMarkdownButton);
+            header.Add(controls);
+
+            _aiReportModeDescriptionLabel = new Label();
+            _aiReportModeDescriptionLabel.AddToClassList("abi-ai-description");
+            header.Add(_aiReportModeDescriptionLabel);
+            _aiReportContainer.Add(header);
+
+            _aiReportPreviewField = new TextField
+            {
+                multiline = true,
+                isReadOnly = true,
+                value = "Load a Build Layout report, choose a report type, then click Generate Report."
+            };
+            _aiReportPreviewField.AddToClassList("abi-ai-preview");
+
+            _aiReportOutputContainer = new VisualElement();
+            _aiReportOutputContainer.AddToClassList("abi-ai-output");
+            _aiReportScrollView = new ScrollView();
+            _aiReportScrollView.AddToClassList("abi-ai-scroll");
+            _aiReportScrollView.Add(_aiReportPreviewField);
+            _aiReportOutputContainer.Add(_aiReportScrollView);
+            _aiReportContainer.Add(_aiReportOutputContainer);
+            UpdateAiReportModeDescription(_aiReportModeField.value);
+        }
+
+        private void UpdateAiReportModeDescription(AiReportMode mode)
+        {
+            if (_aiReportModeDescriptionLabel == null)
+            {
+                return;
+            }
+
+            AiPromptTemplate template = AiPromptTemplate.ForMode(mode);
+            _aiReportModeDescriptionLabel.text = $"{template.Title}: {template.Description}";
         }
 
         private static ListView CreateListView(
@@ -639,8 +718,8 @@ namespace AddressablesBuildInspector.Editor.Windows
                 fixedItemHeight = 30,
                 makeItem = makeItem,
                 bindItem = bindItem,
-                selectionType = SelectionType.None,
-                showAlternatingRowBackgrounds = AlternatingRowBackground.None
+                selectionType = SelectionType.Single,
+                showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly
             };
 
             listView.AddToClassList("abi-list-view");
@@ -653,14 +732,12 @@ namespace AddressablesBuildInspector.Editor.Windows
             var cells = new BundleRowElements
             {
                 Name = TableBuilder.CreateCell("bundle-name", 5f),
-                Location = TableBuilder.CreateCell("bundle-location", 1.1f),
                 Size = TableBuilder.CreateCell("bundle-size", 1.4f, true),
                 AssetCount = TableBuilder.CreateCell("bundle-asset-count", 1.2f, true)
             };
 
             row.userData = cells;
             row.Add(cells.Name);
-            row.Add(cells.Location);
             row.Add(cells.Size);
             row.Add(cells.AssetCount);
             return row;
@@ -672,7 +749,6 @@ namespace AddressablesBuildInspector.Editor.Windows
             BundleData bundle = _visibleBundles[index];
 
             cells.Name.text = bundle.Name;
-            cells.Location.text = FormatBundleLocation(bundle.Location);
             cells.Size.text = ByteFormatter.FormatBytes(bundle.SizeBytes);
             cells.AssetCount.text = bundle.AssetCount.ToString(CultureInfo.InvariantCulture);
         }
@@ -754,6 +830,7 @@ namespace AddressablesBuildInspector.Editor.Windows
 
             cells.Waste.AddToClassList("abi-cell-danger");
             cells.Savings.AddToClassList("abi-cell-danger");
+            cells.Severity.AddToClassList("abi-severity-pill");
             row.userData = cells;
             row.Add(cells.Asset);
             row.Add(cells.BundleCount);
@@ -775,7 +852,7 @@ namespace AddressablesBuildInspector.Editor.Windows
             cells.BundleCount.text = candidate.BundleCount.ToString(CultureInfo.InvariantCulture);
             cells.Waste.text = ByteFormatter.FormatBytes(candidate.DuplicateWasteBytes);
             cells.Savings.text = ByteFormatter.FormatBytes(candidate.Impact.PotentialSavingsBytes);
-            cells.Severity.text = candidate.Severity.ToString();
+            SetSeverityPill(cells.Severity, candidate.Severity);
             cells.Recommendation.text = FormatRecommendation(candidate.Recommendation);
         }
 
@@ -919,6 +996,65 @@ namespace AddressablesBuildInspector.Editor.Windows
             }
 
             SetReport(result.Report);
+        }
+
+        private void ClearReport()
+        {
+            _report = null;
+            _diffReport = null;
+            RebuildReportServices();
+
+            _allBundles.Clear();
+            _allAssets.Clear();
+            _allDuplicates.Clear();
+            _visibleBundles.Clear();
+            _visibleAssets.Clear();
+            _visibleDuplicates.Clear();
+            _visibleOptimizationCandidates.Clear();
+            _dependencySearchResults.Clear();
+            _visibleBundleDiffs.Clear();
+            _visibleAssetDiffs.Clear();
+
+            ResetSortState();
+            _searchQuery = string.Empty;
+            _oldBuildPath = string.Empty;
+            _newBuildPath = string.Empty;
+            _generatedAiPrompt = string.Empty;
+
+            _sourceLabel.text = "No report loaded";
+            _searchField.SetValueWithoutNotify(string.Empty);
+            _dependencySearchField.SetValueWithoutNotify(string.Empty);
+            _oldBuildPathLabel.text = "No old build selected";
+            _newBuildPathLabel.text = "No new build selected";
+            _diffFilterField.SetValueWithoutNotify("All");
+            RenderAiReportPreview("Load a Build Layout report, choose a report type, then click Generate Report.");
+
+            EditorPrefs.DeleteKey(LastReportPathEditorPrefsKey);
+
+            _optimizationDetailsContainer.Clear();
+            _optimizationDetailsContainer.Add(TableBuilder.CreateEmptyState("Select a candidate to inspect cause, dependency paths, and simulated savings."));
+            ClearDependencySelection("Select an asset to inspect its dependency tree.");
+
+            RenderOverview();
+            RenderOptimizationDashboard();
+            RefreshOptimizationTable();
+            RenderDiffOverview();
+            RenderDiffInsights();
+            RefreshAllTables();
+            SetActiveTab(ActiveTab.Overview);
+            ShowStatus("Load a Build Layout report to begin.", StatusKind.Neutral);
+        }
+
+        private void ResetSortState()
+        {
+            _bundleSortColumn = BundleSortColumn.Size;
+            _assetSortColumn = AssetSortColumn.Size;
+            _duplicateSortColumn = DuplicateSortColumn.Waste;
+            _optimizationSortColumn = OptimizationSortColumn.Savings;
+            _bundleSortAscending = false;
+            _assetSortAscending = false;
+            _duplicateSortAscending = false;
+            _optimizationSortAscending = false;
         }
 
         private void RestoreLastReportIfAvailable()
@@ -1073,6 +1209,314 @@ namespace AddressablesBuildInspector.Editor.Windows
             ShowStatus($"Exported optimization report to {Path.GetFileName(path)}.", StatusKind.Success);
         }
 
+        private void GenerateFixPlanPrompt()
+        {
+            if (_report == null)
+            {
+                ShowStatus("Load a report before generating a fix plan prompt.", StatusKind.Error);
+                return;
+            }
+
+            EnsureOptimizationReport();
+            if (_optimizationReport == null)
+            {
+                ShowStatus("Optimization report could not be generated.", StatusKind.Error);
+                return;
+            }
+
+            _generatedAiPrompt = _aiPromptGenerator.GenerateFixPlanPrompt(_report, _optimizationReport);
+            RenderAiReportPreview(_generatedAiPrompt);
+
+            _aiPromptExporter.CopyToClipboard(_generatedAiPrompt);
+            ShowStatus("Fix plan prompt copied to clipboard.", StatusKind.Success);
+        }
+
+        private void GenerateAiReport()
+        {
+            if (_report == null && _diffReport == null)
+            {
+                ShowStatus("Load a report or generate a build diff before creating an AI report.", StatusKind.Error);
+                return;
+            }
+
+            AiReportMode mode = _aiReportModeField?.value ?? AiReportMode.OptimizationConsultant;
+            QueueAiReportGeneration(mode);
+        }
+
+        private void QueueAiReportGeneration(AiReportMode mode)
+        {
+            ShowAiReportLoadingState(mode);
+            _queuedAiReportMode = mode;
+            if (_report != null && RequiresHeavyAiContext(mode) && !_report.DependenciesLoaded)
+            {
+                _generateAiReportAfterDependencyLoad = true;
+                QueueDependencyLoad();
+                return;
+            }
+
+            if (_aiReportGenerationQueued || _aiReportGenerationInProgress)
+            {
+                return;
+            }
+
+            _aiReportGenerationQueued = true;
+            EditorApplication.delayCall += GenerateAiReportDelayed;
+        }
+
+        private void GenerateAiReportDelayed()
+        {
+            _aiReportGenerationQueued = false;
+            if (_report == null && _diffReport == null)
+            {
+                RenderAiReportPreview("Load a Build Layout report, choose a report type, then click Generate Report.");
+                return;
+            }
+
+            _aiReportGenerationInProgress = true;
+            BuildReportData report = _report;
+            BuildDiffReport diffReport = _diffReport;
+            OptimizationReport existingOptimization = _optimizationReport;
+            AiReportMode mode = _queuedAiReportMode;
+            _aiReportGenerationSourcePath = report?.SourcePath ?? string.Empty;
+            _aiReportGenerationTask = Task.Run(() => GenerateAiReportInBackground(mode, report, diffReport, existingOptimization));
+            EditorApplication.update += PollAiReportGenerationTask;
+        }
+
+        private void CompleteAiReportGeneration(AiReportMode mode)
+        {
+            AiPromptContext context = CreateAiPromptContext(mode);
+            _generatedAiPrompt = _aiPromptGenerator.GenerateReport(context);
+            RenderAiReportPreview(_generatedAiPrompt);
+            ShowStatus("AI report generated offline.", StatusKind.Success);
+        }
+
+        private AiReportGenerationResult GenerateAiReportInBackground(
+            AiReportMode mode,
+            BuildReportData report,
+            BuildDiffReport diffReport,
+            OptimizationReport existingOptimization)
+        {
+            OptimizationReport optimization = existingOptimization;
+            IReadOnlyList<DependencyNode> mostReferenced = null;
+            IReadOnlyList<DependencyNode> sharedAssets = null;
+            IReadOnlyList<DependencyChainInfo> hotspots = null;
+
+            if (report != null && mode != AiReportMode.BuildGrowthInvestigation)
+            {
+                var graphService = new DependencyGraphService(
+                    report,
+                    new BuildLayoutDependencyProvider(report),
+                    fallbackProvider: null);
+
+                optimization = optimization ?? new DuplicateOptimizationService(graphService).Analyze(report);
+                if (RequiresHeavyAiContext(mode) && report.DependenciesLoaded)
+                {
+                    mostReferenced = graphService.GetMostReferencedAssets(10);
+                    sharedAssets = graphService.GetSharedAssets().Take(10).ToList();
+                    hotspots = graphService.GetLargestDependencyChains(10);
+                }
+            }
+
+            var context = new AiPromptContext
+            {
+                Report = report ?? diffReport?.NewBuild,
+                OptimizationReport = optimization,
+                BuildDiffReport = diffReport,
+                Mode = mode,
+                MostReferencedAssets = mostReferenced,
+                SharedAssets = sharedAssets,
+                DependencyHotspots = hotspots
+            };
+
+            return new AiReportGenerationResult
+            {
+                Prompt = new AiPromptGenerator().GenerateReport(context),
+                OptimizationReport = optimization
+            };
+        }
+
+        private void PollAiReportGenerationTask()
+        {
+            if (_aiReportGenerationTask == null || !_aiReportGenerationTask.IsCompleted)
+            {
+                return;
+            }
+
+            EditorApplication.update -= PollAiReportGenerationTask;
+            Task<AiReportGenerationResult> completedTask = _aiReportGenerationTask;
+            string sourcePath = _aiReportGenerationSourcePath;
+            _aiReportGenerationTask = null;
+            _aiReportGenerationSourcePath = string.Empty;
+            _aiReportGenerationInProgress = false;
+
+            if (_report != null &&
+                sourcePath.Length > 0 &&
+                !string.Equals(_report.SourcePath, sourcePath, StringComparison.OrdinalIgnoreCase))
+            {
+                RenderAiReportPreview("Report changed while AI report was generating. Generate the report again.");
+                ShowStatus("AI report generation was ignored because the loaded report changed.", StatusKind.Error);
+                Repaint();
+                return;
+            }
+
+            if (completedTask.IsFaulted)
+            {
+                string message = completedTask.Exception?.GetBaseException().Message ?? "Unknown error.";
+                RenderAiReportPreview("AI report generation failed.");
+                ShowStatus($"Could not generate AI report: {message}", StatusKind.Error);
+                Repaint();
+                return;
+            }
+
+            AiReportGenerationResult result = completedTask.Result;
+            _generatedAiPrompt = result.Prompt;
+            if (_optimizationReport == null && result.OptimizationReport != null)
+            {
+                _optimizationReport = result.OptimizationReport;
+                RenderOptimizationDashboard();
+                RefreshOptimizationTable();
+            }
+
+            RenderAiReportPreview(_generatedAiPrompt);
+            ShowStatus("AI report generated offline.", StatusKind.Success);
+            Repaint();
+        }
+
+        private static bool RequiresHeavyAiContext(AiReportMode mode)
+        {
+            return mode == AiReportMode.OptimizationConsultant ||
+                   mode == AiReportMode.DuplicateInvestigation ||
+                   mode == AiReportMode.TechnicalAudit;
+        }
+
+        private void ShowAiReportLoadingState(AiReportMode mode)
+        {
+            if (_aiReportOutputContainer == null)
+            {
+                return;
+            }
+
+            AiPromptTemplate template = AiPromptTemplate.ForMode(mode);
+            _aiReportOutputContainer.Clear();
+            _aiReportOutputContainer.Add(CreateLoadingState($"Generating {template.Title}..."));
+            ShowStatus("Generating AI report context...", StatusKind.Neutral);
+            Repaint();
+        }
+
+        private void RenderAiReportPreview(string text)
+        {
+            if (_aiReportPreviewField == null)
+            {
+                return;
+            }
+
+            _aiReportPreviewField.SetValueWithoutNotify(text);
+            if (_aiReportOutputContainer == null)
+            {
+                return;
+            }
+
+            _aiReportOutputContainer.Clear();
+            if (_aiReportScrollView == null)
+            {
+                _aiReportScrollView = new ScrollView();
+                _aiReportScrollView.AddToClassList("abi-ai-scroll");
+            }
+
+            _aiReportScrollView.Clear();
+            _aiReportScrollView.Add(_aiReportPreviewField);
+            _aiReportOutputContainer.Add(_aiReportScrollView);
+        }
+
+        private void CopyAiReportToClipboard()
+        {
+            if (string.IsNullOrWhiteSpace(_generatedAiPrompt))
+            {
+                ShowStatus("Generate an AI report before copying.", StatusKind.Error);
+                return;
+            }
+
+            _aiPromptExporter.CopyToClipboard(_generatedAiPrompt);
+            ShowStatus("AI report copied to clipboard.", StatusKind.Success);
+        }
+
+        private void ExportAiReport(string extension)
+        {
+            if (string.IsNullOrWhiteSpace(_generatedAiPrompt))
+            {
+                ShowStatus("Generate an AI report before exporting.", StatusKind.Error);
+                return;
+            }
+
+            string path = EditorUtility.SaveFilePanel(
+                "Export AI Report",
+                string.Empty,
+                $"AddressablesAIReport.{extension}",
+                extension);
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            try
+            {
+                if (string.Equals(extension, "md", StringComparison.OrdinalIgnoreCase))
+                {
+                    _aiPromptExporter.ExportMarkdown(_generatedAiPrompt, path);
+                }
+                else
+                {
+                    _aiPromptExporter.ExportTxt(_generatedAiPrompt, path);
+                }
+            }
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+            {
+                ShowStatus($"Could not export AI report: {exception.Message}", StatusKind.Error);
+                return;
+            }
+
+            ShowStatus($"Exported AI report to {Path.GetFileName(path)}.", StatusKind.Success);
+        }
+
+        private AiPromptContext CreateAiPromptContext(AiReportMode mode)
+        {
+            OptimizationReport optimization = null;
+            if (_report != null && mode != AiReportMode.BuildGrowthInvestigation)
+            {
+                EnsureOptimizationReport();
+                optimization = _optimizationReport;
+            }
+            else
+            {
+                optimization = _optimizationReport;
+            }
+
+            IReadOnlyList<DependencyNode> mostReferenced = null;
+            IReadOnlyList<DependencyNode> sharedAssets = null;
+            IReadOnlyList<DependencyChainInfo> hotspots = null;
+            if (_report != null &&
+                (mode == AiReportMode.OptimizationConsultant ||
+                 mode == AiReportMode.DuplicateInvestigation ||
+                 mode == AiReportMode.TechnicalAudit) &&
+                _report.DependenciesLoaded)
+            {
+                mostReferenced = _dependencyGraphService.GetMostReferencedAssets(10);
+                sharedAssets = _dependencyGraphService.GetSharedAssets().Take(10).ToList();
+                hotspots = _dependencyGraphService.GetLargestDependencyChains(10);
+            }
+
+            return new AiPromptContext
+            {
+                Report = _report ?? _diffReport?.NewBuild,
+                OptimizationReport = optimization,
+                BuildDiffReport = _diffReport,
+                Mode = mode,
+                MostReferencedAssets = mostReferenced,
+                SharedAssets = sharedAssets,
+                DependencyHotspots = hotspots
+            };
+        }
+
         private void SetReport(BuildReportData report, bool restored = false)
         {
             _report = report;
@@ -1084,25 +1528,14 @@ namespace AddressablesBuildInspector.Editor.Windows
             _allAssets.AddRange(analysis.GetLargestAssets());
             _allDuplicates.Clear();
             _allDuplicates.AddRange(analysis.GetDuplicateAssets());
-            _bundleLocationsByName.Clear();
-            foreach (BundleData bundle in report.Bundles)
-            {
-                _bundleLocationsByName[bundle.Name] = bundle.Location;
-            }
-
-            _dependencyGraphService = new DependencyGraphService(
-                report,
-                new BuildLayoutDependencyProvider(report),
-                new AssetDatabaseDependencyProvider(report));
-            _dependencySearchService = new DependencySearchService(_dependencyGraphService);
-            _dependencyTreeBuilder = new DependencyTreeBuilder(_dependencyGraphService);
-            _optimizationService = new DuplicateOptimizationService(_dependencyGraphService);
-            _optimizationReport = null;
+            RebuildReportServices();
 
             _searchQuery = string.Empty;
+            _generatedAiPrompt = string.Empty;
             _searchField.SetValueWithoutNotify(string.Empty);
-            SetLocationFilter(LocationFilterAll, refreshTable: false);
             _dependencySearchField.SetValueWithoutNotify(string.Empty);
+            RenderAiReportPreview("Choose a report type, then click Generate Report.");
+
             _sourceLabel.text = Path.GetFileName(report.SourcePath);
             if (!string.IsNullOrEmpty(report.SourcePath))
             {
@@ -1121,6 +1554,92 @@ namespace AddressablesBuildInspector.Editor.Windows
                 StatusKind.Success);
         }
 
+        private void RebuildReportServices()
+        {
+            if (_report == null)
+            {
+                ClearDependencyLoadState();
+                _dependencyGraphService = null;
+                _dependencySearchService = null;
+                _dependencyTreeBuilder = null;
+                _optimizationService = null;
+                _optimizationReport = null;
+                _optimizationGenerationQueued = false;
+                _optimizationGenerationInProgress = false;
+                _aiReportGenerationQueued = false;
+                _aiReportGenerationInProgress = false;
+                _generateAiReportAfterDependencyLoad = false;
+                ClearAiReportGenerationState();
+                return;
+            }
+
+            ClearDependencyLoadState();
+            ClearAiReportGenerationState();
+            _dependencyGraphService = new DependencyGraphService(
+                _report,
+                new BuildLayoutDependencyProvider(_report),
+                new AssetDatabaseDependencyProvider(_report));
+            _dependencySearchService = new DependencySearchService(_dependencyGraphService);
+            _dependencyTreeBuilder = new DependencyTreeBuilder(_dependencyGraphService);
+            _optimizationService = new DuplicateOptimizationService(_dependencyGraphService);
+            _optimizationReport = null;
+            _optimizationGenerationQueued = false;
+            _optimizationGenerationInProgress = false;
+            _generateAiReportAfterDependencyLoad = false;
+        }
+
+        private void ClearDependencyLoadState()
+        {
+            EditorApplication.update -= PollDependencyLoadTask;
+            _dependencyLoadQueued = false;
+            _dependencyLoadInProgress = false;
+            _dependencyLoadTask = null;
+            _dependencyLoadSourcePath = string.Empty;
+        }
+
+        private void ClearAiReportGenerationState()
+        {
+            EditorApplication.update -= PollAiReportGenerationTask;
+            _aiReportGenerationQueued = false;
+            _aiReportGenerationInProgress = false;
+            _aiReportGenerationTask = null;
+            _aiReportGenerationSourcePath = string.Empty;
+        }
+
+        private bool EnsureReportDependenciesLoaded()
+        {
+            if (_report == null)
+            {
+                return false;
+            }
+
+            if (_report.DependenciesLoaded)
+            {
+                return true;
+            }
+
+            if (_parser == null || string.IsNullOrWhiteSpace(_report.SourcePath))
+            {
+                ShowStatus("Could not load dependency graph for this report.", StatusKind.Error);
+                return false;
+            }
+
+            ShowStatus("Loading dependency graph from JSON report...", StatusKind.Neutral);
+            BuildLayoutParseResult result = _parser.ParseWithDependencies(_report.SourcePath);
+            if (!result.Success)
+            {
+                ShowStatus($"Could not load dependency graph: {result.ErrorMessage}", StatusKind.Error);
+                return false;
+            }
+
+            _report.Dependencies.Clear();
+            _report.Dependencies.AddRange(result.Report.Dependencies);
+            _report.DependenciesLoaded = true;
+            RebuildReportServices();
+            ShowStatus($"Loaded dependency graph with {_report.Dependencies.Count} edges.", StatusKind.Success);
+            return true;
+        }
+
         private void RenderOverview()
         {
             _overviewContainer.Clear();
@@ -1135,24 +1654,20 @@ namespace AddressablesBuildInspector.Editor.Windows
             var analysis = new BuildAnalysisService(_report);
             BuildOverviewData overview = analysis.GetOverview();
 
+            _overviewContainer.Add(CreateSectionTitle("Build Health Overview", "Primary metrics for build size, duplicate waste, savings, and risk."));
+
             var grid = new VisualElement();
             grid.AddToClassList("abi-overview-grid");
+            grid.AddToClassList("abi-kpi-row");
             _overviewContainer.Add(grid);
 
-            AddStatCard(grid, "Total Build Size", ByteFormatter.FormatBytes(overview.TotalBuildSizeBytes));
+            int healthScore = CalculateHealthScore(overview);
+            AddHealthScoreCard(grid, healthScore);
+            AddStatCard(grid, "Build Size", ByteFormatter.FormatBytes(overview.TotalBuildSizeBytes), null, null, FormatBuildGrowthMeta());
             AddStatCard(grid, "Bundle Count", overview.BundleCount.ToString(CultureInfo.InvariantCulture));
             AddStatCard(grid, "Asset Count", overview.AssetCount.ToString(CultureInfo.InvariantCulture));
-            AddStatCard(grid, "Duplicate Assets", overview.DuplicateAssetCount.ToString(CultureInfo.InvariantCulture));
-            AddStatCard(grid, "Duplicate Waste", ByteFormatter.FormatBytes(overview.EstimatedDuplicateWasteBytes));
-            AddStatCard(grid, "Largest Bundle", FormatLargestBundle(overview.LargestBundle));
-            AddStatCard(grid, "Largest Asset", FormatLargestAsset(overview.LargestAsset));
-
-            int remoteBundleCount = _report.Bundles.Count(bundle => bundle.Location == BundleLocation.Remote);
-            int localBundleCount = _report.Bundles.Count(bundle => bundle.Location == BundleLocation.Local);
-            int unknownBundleCount = _report.Bundles.Count(bundle => bundle.Location == BundleLocation.Unknown);
-            AddStatCard(grid, "Remote Bundles", remoteBundleCount.ToString(CultureInfo.InvariantCulture));
-            AddStatCard(grid, "Local Bundles", localBundleCount.ToString(CultureInfo.InvariantCulture));
-            AddStatCard(grid, "Unknown Location", unknownBundleCount.ToString(CultureInfo.InvariantCulture));
+            AddStatCard(grid, "Duplicate Waste", ByteFormatter.FormatBytes(overview.EstimatedDuplicateWasteBytes), GetWasteCardClass(overview.EstimatedDuplicateWasteBytes));
+            AddStatCard(grid, "Potential Savings", ByteFormatter.FormatBytes(overview.EstimatedDuplicateWasteBytes), GetWasteCardClass(overview.EstimatedDuplicateWasteBytes), null, "From duplicate asset waste");
 
             if (_diffReport != null)
             {
@@ -1171,22 +1686,358 @@ namespace AddressablesBuildInspector.Editor.Windows
                 AddStatCard(grid, "Largest Added Asset", FormatAssetDiff(largestAddedAsset));
                 AddStatCard(grid, "Duplicate Regression", ByteFormatter.FormatBytes(duplicateRegressionWaste));
             }
+
+            AddOverviewInsightsPanel(overview);
+            AddTopOffendersPanel(overview);
         }
 
-        private static void AddStatCard(VisualElement parent, string label, string value)
+        private void AddOverviewInsightsPanel(BuildOverviewData overview)
+        {
+            var panel = new VisualElement();
+            panel.AddToClassList("abi-insight-grid");
+
+            List<DuplicateAssetData> topDuplicates = _allDuplicates
+                .OrderByDescending(duplicate => duplicate.EstimatedWasteBytes)
+                .Take(5)
+                .ToList();
+
+            long topDuplicateWaste = topDuplicates.Sum(duplicate => duplicate.EstimatedWasteBytes);
+            string topDuplicateShare = overview.EstimatedDuplicateWasteBytes > 0
+                ? (topDuplicateWaste / (double)overview.EstimatedDuplicateWasteBytes).ToString("P0", CultureInfo.InvariantCulture)
+                : "0%";
+
+            panel.Add(CreateInsightCard(
+                "!",
+                "Top Issues",
+                topDuplicates.Count == 0
+                    ? "No duplicated asset waste was detected in this build."
+                    : $"{topDuplicates.Count} assets account for {topDuplicateShare} of duplicate waste.",
+                topDuplicates.Count == 0 ? OptimizationSeverity.Low : EstimateSeverity(topDuplicateWaste, overview.TotalBuildSizeBytes)));
+
+            panel.Add(CreateInsightCard(
+                "$",
+                "Optimization ROI",
+                overview.EstimatedDuplicateWasteBytes > 0
+                    ? $"{ByteFormatter.FormatBytes(overview.EstimatedDuplicateWasteBytes)} can potentially be recovered from duplicate asset waste."
+                    : "No duplicate waste savings are currently available.",
+                EstimateSeverity(overview.EstimatedDuplicateWasteBytes, overview.TotalBuildSizeBytes)));
+
+            string diffMessage = _diffReport == null
+                ? "Compare two reports to reveal build growth and regression signals."
+                : $"Build size changed by {FormatSignedBytes(_diffReport.TotalSizeDelta)} in the active diff.";
+            panel.Add(CreateInsightCard(
+                "^",
+                "Build Growth",
+                diffMessage,
+                _diffReport != null && _diffReport.TotalSizeDelta > 0 ? OptimizationSeverity.Medium : OptimizationSeverity.Low));
+
+            _overviewContainer.Add(CreateSectionTitle("Insights", "Actionable signals surfaced from the current report."));
+            _overviewContainer.Add(panel);
+        }
+
+        private void AddTopOffendersPanel(BuildOverviewData overview)
+        {
+            var panel = new VisualElement();
+            panel.AddToClassList("abi-top-offenders");
+            panel.Add(CreatePaneHeading("Top Duplicate Assets"));
+
+            IEnumerable<DuplicateAssetData> topDuplicates = _allDuplicates
+                .OrderByDescending(duplicate => duplicate.EstimatedWasteBytes)
+                .Take(5);
+
+            if (!topDuplicates.Any())
+            {
+                panel.Add(TableBuilder.CreateEmptyState("No duplicate asset waste detected in this build."));
+                _overviewContainer.Add(panel);
+                return;
+            }
+
+            var header = new VisualElement();
+            header.AddToClassList("abi-top-offenders-header");
+            header.Add(CreateOffenderCell("Asset Name", 3f));
+            header.Add(CreateOffenderCell("Waste", 1f, true));
+            header.Add(CreateOffenderCell("Bundles", 0.8f, true));
+            header.Add(CreateOffenderCell("Severity", 1f));
+            panel.Add(header);
+
+            foreach (DuplicateAssetData duplicate in topDuplicates)
+            {
+                OptimizationSeverity severity = EstimateSeverity(duplicate.EstimatedWasteBytes, overview.TotalBuildSizeBytes);
+                var row = new VisualElement();
+                row.AddToClassList("abi-top-offender-row");
+                var name = CreateOffenderCell(duplicate.Asset.Name, 3f);
+                name.tooltip = duplicate.Asset.Path;
+                row.Add(name);
+                row.Add(CreateOffenderCell(ByteFormatter.FormatBytes(duplicate.EstimatedWasteBytes), 1f, true));
+                row.Add(CreateOffenderCell(duplicate.BundleCount.ToString(CultureInfo.InvariantCulture), 0.8f, true));
+                var severityLabel = CreateOffenderCell(string.Empty, 1f);
+                severityLabel.AddToClassList("abi-severity-pill");
+                SetSeverityPill(severityLabel, severity);
+                row.Add(severityLabel);
+                panel.Add(row);
+            }
+
+            _overviewContainer.Add(panel);
+        }
+
+        private static Label CreateOffenderCell(string text, float flexGrow, bool numeric = false)
+        {
+            var label = new Label(text);
+            label.AddToClassList("abi-top-offender-cell");
+            if (numeric)
+            {
+                label.AddToClassList("abi-cell-number");
+            }
+
+            label.style.flexGrow = flexGrow;
+            label.style.flexBasis = 0;
+            label.style.minWidth = 0;
+            return label;
+        }
+
+        private static VisualElement CreateSectionTitle(string title, string subtitle)
+        {
+            var container = new VisualElement();
+            container.AddToClassList("abi-section-title");
+
+            var titleLabel = new Label(title);
+            titleLabel.AddToClassList("abi-section-title-label");
+            container.Add(titleLabel);
+
+            if (!string.IsNullOrWhiteSpace(subtitle))
+            {
+                var subtitleLabel = new Label(subtitle);
+                subtitleLabel.AddToClassList("abi-section-title-subtitle");
+                container.Add(subtitleLabel);
+            }
+
+            return container;
+        }
+
+        private static void AddHealthScoreCard(VisualElement parent, int healthScore)
         {
             var card = new VisualElement();
             card.AddToClassList("abi-stat-card");
+            card.AddToClassList("abi-health-card");
+            card.AddToClassList(GetHealthCardClass(healthScore));
+
+            var label = new Label("Health Score");
+            label.AddToClassList("abi-stat-label");
+
+            var body = new VisualElement();
+            body.AddToClassList("abi-health-body");
+
+            var ring = new VisualElement();
+            ring.AddToClassList("abi-health-ring");
+            ring.AddToClassList(GetHealthRingClass(healthScore));
+            var score = new Label(healthScore.ToString(CultureInfo.InvariantCulture));
+            score.AddToClassList("abi-health-score");
+            ring.Add(score);
+
+            var copy = new VisualElement();
+            copy.AddToClassList("abi-health-copy");
+            var value = new Label(healthScore.ToString(CultureInfo.InvariantCulture) + " / 100");
+            value.AddToClassList("abi-health-value");
+            var state = new Label(FormatHealthState(healthScore));
+            state.AddToClassList("abi-health-state");
+            copy.Add(value);
+            copy.Add(state);
+
+            body.Add(ring);
+            body.Add(copy);
+            card.Add(label);
+            card.Add(body);
+            parent.Add(card);
+        }
+
+        private static void AddStatCard(VisualElement parent, string label, string value, string cardClass = null, string valueClass = null, string meta = null)
+        {
+            var card = new VisualElement();
+            card.AddToClassList("abi-stat-card");
+            if (!string.IsNullOrEmpty(cardClass))
+            {
+                foreach (string className in cardClass.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    card.AddToClassList(className);
+                }
+            }
 
             var labelElement = new Label(label);
             labelElement.AddToClassList("abi-stat-label");
 
             var valueElement = new Label(value);
             valueElement.AddToClassList("abi-stat-value");
+            if (!string.IsNullOrEmpty(valueClass))
+            {
+                valueElement.AddToClassList(valueClass);
+            }
 
             card.Add(labelElement);
             card.Add(valueElement);
+            if (!string.IsNullOrEmpty(meta))
+            {
+                var metaElement = new Label(meta);
+                metaElement.AddToClassList("abi-stat-meta");
+                card.Add(metaElement);
+            }
+
             parent.Add(card);
+        }
+
+        private static VisualElement CreateInsightCard(string icon, string title, string body, OptimizationSeverity severity)
+        {
+            var card = new VisualElement();
+            card.AddToClassList("abi-insight-card");
+
+            var iconLabel = new Label(icon);
+            iconLabel.AddToClassList("abi-insight-icon");
+            card.Add(iconLabel);
+
+            var content = new VisualElement();
+            content.AddToClassList("abi-insight-content");
+            var titleLabel = new Label(title);
+            titleLabel.AddToClassList("abi-insight-title");
+            var bodyLabel = new Label(body);
+            bodyLabel.AddToClassList("abi-insight-body");
+            var severityLabel = new Label();
+            severityLabel.AddToClassList("abi-severity-pill");
+            severityLabel.AddToClassList("abi-insight-severity");
+            SetSeverityPill(severityLabel, severity);
+
+            content.Add(titleLabel);
+            content.Add(bodyLabel);
+            content.Add(severityLabel);
+            card.Add(content);
+            return card;
+        }
+
+        private static void AddDiffStatCard(VisualElement parent, string label, string value)
+        {
+            AddStatCard(parent, label, value, "abi-diff-stat-card", "abi-diff-stat-value");
+        }
+
+        private string FormatBuildGrowthMeta()
+        {
+            if (_diffReport == null)
+            {
+                return null;
+            }
+
+            return "Trend " + FormatSignedBytes(_diffReport.TotalSizeDelta);
+        }
+
+        private static int CalculateHealthScore(BuildOverviewData overview)
+        {
+            if (overview == null || overview.TotalBuildSizeBytes <= 0)
+            {
+                return 100;
+            }
+
+            double duplicateRatio = (double)Math.Max(0, overview.EstimatedDuplicateWasteBytes) / overview.TotalBuildSizeBytes;
+            int duplicatePenalty = (int)Math.Round(Math.Min(45, duplicateRatio * 220));
+            int countPenalty = Math.Min(20, overview.DuplicateAssetCount / 10);
+            return Math.Max(0, Math.Min(100, 100 - duplicatePenalty - countPenalty));
+        }
+
+        private static string FormatHealthState(int healthScore)
+        {
+            if (healthScore >= 90)
+            {
+                return "Excellent";
+            }
+
+            if (healthScore >= 70)
+            {
+                return "Needs attention";
+            }
+
+            return "High risk";
+        }
+
+        private static string GetHealthCardClass(int healthScore)
+        {
+            if (healthScore >= 90)
+            {
+                return "abi-card-success";
+            }
+
+            if (healthScore >= 70)
+            {
+                return "abi-card-warning";
+            }
+
+            return "abi-card-danger";
+        }
+
+        private static string GetHealthRingClass(int healthScore)
+        {
+            if (healthScore >= 90)
+            {
+                return "abi-health-ring-success";
+            }
+
+            if (healthScore >= 70)
+            {
+                return "abi-health-ring-warning";
+            }
+
+            return "abi-health-ring-danger";
+        }
+
+        private static string GetWasteCardClass(long bytes)
+        {
+            return bytes > 0 ? "abi-card-warning" : "abi-card-success";
+        }
+
+        private static OptimizationSeverity EstimateSeverity(long wasteBytes, long totalBuildSizeBytes)
+        {
+            if (totalBuildSizeBytes <= 0)
+            {
+                return wasteBytes > 0 ? OptimizationSeverity.Medium : OptimizationSeverity.Low;
+            }
+
+            double ratio = (double)wasteBytes / totalBuildSizeBytes;
+            if (ratio >= 0.05)
+            {
+                return OptimizationSeverity.Critical;
+            }
+
+            if (ratio >= 0.02)
+            {
+                return OptimizationSeverity.High;
+            }
+
+            if (ratio > 0)
+            {
+                return OptimizationSeverity.Medium;
+            }
+
+            return OptimizationSeverity.Low;
+        }
+
+        private static void SetSeverityPill(Label label, OptimizationSeverity severity)
+        {
+            label.RemoveFromClassList("abi-severity-critical");
+            label.RemoveFromClassList("abi-severity-high");
+            label.RemoveFromClassList("abi-severity-medium");
+            label.RemoveFromClassList("abi-severity-low");
+            label.text = severity.ToString().ToUpperInvariant();
+
+            switch (severity)
+            {
+                case OptimizationSeverity.Critical:
+                    label.AddToClassList("abi-severity-critical");
+                    break;
+                case OptimizationSeverity.High:
+                    label.AddToClassList("abi-severity-high");
+                    break;
+                case OptimizationSeverity.Medium:
+                    label.AddToClassList("abi-severity-medium");
+                    break;
+                default:
+                    label.AddToClassList("abi-severity-low");
+                    break;
+            }
         }
 
         private static Label CreatePaneHeading(string text)
@@ -1249,52 +2100,6 @@ namespace AddressablesBuildInspector.Editor.Windows
             return ByteFormatter.FormatBytes(0);
         }
 
-        private bool MatchesLocationFilter(BundleData bundle)
-        {
-            if (bundle == null || string.Equals(_locationFilter, LocationFilterAll, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return string.Equals(FormatBundleLocation(bundle.Location), _locationFilter, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private bool MatchesLocationFilter(AssetData asset)
-        {
-            if (asset == null || string.Equals(_locationFilter, LocationFilterAll, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            BundleLocation requestedLocation = string.Equals(_locationFilter, LocationFilterRemote, StringComparison.OrdinalIgnoreCase)
-                ? BundleLocation.Remote
-                : BundleLocation.Local;
-
-            return asset.BundleNames
-                .Select(ResolveBundleLocation)
-                .Any(location => location == requestedLocation);
-        }
-
-        private BundleLocation ResolveBundleLocation(string bundleName)
-        {
-            return _bundleLocationsByName.TryGetValue(bundleName ?? string.Empty, out BundleLocation location)
-                ? location
-                : BundleLocation.Unknown;
-        }
-
-        private static string FormatBundleLocation(BundleLocation location)
-        {
-            switch (location)
-            {
-                case BundleLocation.Local:
-                    return LocationFilterLocal;
-                case BundleLocation.Remote:
-                    return LocationFilterRemote;
-                default:
-                    return "Unknown";
-            }
-        }
-
         private static string FormatCause(DuplicateCause cause)
         {
             return SplitPascalCase(cause.ToString());
@@ -1338,6 +2143,7 @@ namespace AddressablesBuildInspector.Editor.Windows
             _optimizationContainer.EnableInClassList("abi-hidden", tab != ActiveTab.Optimization);
             _dependenciesContainer.EnableInClassList("abi-hidden", tab != ActiveTab.Dependencies);
             _buildDiffContainer.EnableInClassList("abi-hidden", tab != ActiveTab.BuildDiff);
+            _aiReportContainer.EnableInClassList("abi-hidden", tab != ActiveTab.AIReport);
 
             SetTabButtonState(_overviewTabButton, tab == ActiveTab.Overview);
             SetTabButtonState(_bundlesTabButton, tab == ActiveTab.Bundles);
@@ -1346,13 +2152,13 @@ namespace AddressablesBuildInspector.Editor.Windows
             SetTabButtonState(_optimizationTabButton, tab == ActiveTab.Optimization);
             SetTabButtonState(_dependenciesTabButton, tab == ActiveTab.Dependencies);
             SetTabButtonState(_buildDiffTabButton, tab == ActiveTab.BuildDiff);
+            SetTabButtonState(_aiReportTabButton, tab == ActiveTab.AIReport);
 
             bool tableSearchEnabled = tab == ActiveTab.Bundles ||
                                       tab == ActiveTab.Assets ||
                                       tab == ActiveTab.Duplicates ||
                                       tab == ActiveTab.Optimization;
             _searchField.SetEnabled(tableSearchEnabled);
-            _locationFilterBar.SetEnabled(tableSearchEnabled);
             RefreshActiveTable();
         }
 
@@ -1370,7 +2176,7 @@ namespace AddressablesBuildInspector.Editor.Windows
             else
             {
                 _bundleSortColumn = column;
-                _bundleSortAscending = column == BundleSortColumn.Name || column == BundleSortColumn.Location;
+                _bundleSortAscending = column == BundleSortColumn.Name;
             }
 
             RefreshBundles();
@@ -1435,15 +2241,15 @@ namespace AddressablesBuildInspector.Editor.Windows
                     RefreshDuplicates();
                     break;
                 case ActiveTab.Optimization:
-                    EnsureOptimizationReport();
-                    RenderOptimizationDashboard();
-                    RefreshOptimizationTable();
+                    RefreshOptimizationView();
                     break;
                 case ActiveTab.Dependencies:
-                    RefreshDependencySearch();
+                    RefreshDependenciesView();
                     break;
                 case ActiveTab.BuildDiff:
                     RefreshDiffTables();
+                    break;
+                case ActiveTab.AIReport:
                     break;
             }
         }
@@ -1459,8 +2265,7 @@ namespace AddressablesBuildInspector.Editor.Windows
         private void RefreshBundles()
         {
             IEnumerable<BundleData> rows = _allBundles
-                .Where(bundle => SearchUtility.Matches(_searchQuery, bundle.Name))
-                .Where(MatchesLocationFilter);
+                .Where(bundle => SearchUtility.Matches(_searchQuery, bundle.Name));
 
             rows = SortBundles(rows);
             ReplaceList(_visibleBundles, rows);
@@ -1479,10 +2284,6 @@ namespace AddressablesBuildInspector.Editor.Windows
                     return _bundleSortAscending
                         ? rows.OrderBy(bundle => bundle.AssetCount).ThenBy(bundle => bundle.Name, StringComparer.OrdinalIgnoreCase)
                         : rows.OrderByDescending(bundle => bundle.AssetCount).ThenBy(bundle => bundle.Name, StringComparer.OrdinalIgnoreCase);
-                case BundleSortColumn.Location:
-                    return _bundleSortAscending
-                        ? rows.OrderBy(bundle => bundle.Location).ThenBy(bundle => bundle.Name, StringComparer.OrdinalIgnoreCase)
-                        : rows.OrderByDescending(bundle => bundle.Location).ThenBy(bundle => bundle.Name, StringComparer.OrdinalIgnoreCase);
                 default:
                     return _bundleSortAscending
                         ? rows.OrderBy(bundle => bundle.SizeBytes).ThenBy(bundle => bundle.Name, StringComparer.OrdinalIgnoreCase)
@@ -1493,8 +2294,7 @@ namespace AddressablesBuildInspector.Editor.Windows
         private void RefreshAssets()
         {
             IEnumerable<AssetData> rows = _allAssets
-                .Where(asset => SearchUtility.Matches(_searchQuery, asset.Name, asset.Path))
-                .Where(MatchesLocationFilter);
+                .Where(asset => SearchUtility.Matches(_searchQuery, asset.Name, asset.Path));
 
             rows = SortAssets(rows);
             ReplaceList(_visibleAssets, rows);
@@ -1527,8 +2327,7 @@ namespace AddressablesBuildInspector.Editor.Windows
         private void RefreshDuplicates()
         {
             IEnumerable<DuplicateAssetData> rows = _allDuplicates
-                .Where(duplicate => SearchUtility.Matches(_searchQuery, duplicate.Asset.Name, duplicate.Asset.Path))
-                .Where(duplicate => MatchesLocationFilter(duplicate.Asset));
+                .Where(duplicate => SearchUtility.Matches(_searchQuery, duplicate.Asset.Name, duplicate.Asset.Path));
 
             rows = SortDuplicates(rows);
             ReplaceList(_visibleDuplicates, rows);
@@ -1542,7 +2341,202 @@ namespace AddressablesBuildInspector.Editor.Windows
                 return;
             }
 
-            _optimizationReport = _optimizationService.Analyze(_report);
+            _optimizationGenerationInProgress = true;
+            try
+            {
+                if (!EnsureReportDependenciesLoaded())
+                {
+                    return;
+                }
+
+                _optimizationReport = _optimizationService.Analyze(_report);
+            }
+            finally
+            {
+                _optimizationGenerationInProgress = false;
+            }
+        }
+
+        private void RefreshOptimizationView()
+        {
+            if (_report != null &&
+                _optimizationReport == null &&
+                !_optimizationGenerationInProgress)
+            {
+                QueueOptimizationGeneration();
+                return;
+            }
+
+            RenderOptimizationDashboard();
+            RefreshOptimizationTable();
+        }
+
+        private void RefreshDependenciesView()
+        {
+            if (_report != null &&
+                !_report.DependenciesLoaded &&
+                !_dependencyLoadInProgress)
+            {
+                QueueDependencyLoad();
+                return;
+            }
+
+            RefreshDependencySearch();
+        }
+
+        private void QueueDependencyLoad()
+        {
+            ShowDependencyLoadingState();
+            if (_dependencyLoadQueued || _dependencyLoadInProgress)
+            {
+                return;
+            }
+
+            _dependencyLoadQueued = true;
+            EditorApplication.delayCall += StartDependencyLoadTask;
+        }
+
+        private void StartDependencyLoadTask()
+        {
+            _dependencyLoadQueued = false;
+            if (_report == null || _report.DependenciesLoaded || string.IsNullOrWhiteSpace(_report.SourcePath))
+            {
+                RefreshDependencySearch();
+                return;
+            }
+
+            _dependencyLoadInProgress = true;
+            _dependencyLoadSourcePath = _report.SourcePath;
+            string sourcePath = _dependencyLoadSourcePath;
+            _dependencyLoadTask = Task.Run(() => _parser.ParseWithDependenciesForBackground(sourcePath));
+            EditorApplication.update += PollDependencyLoadTask;
+        }
+
+        private void PollDependencyLoadTask()
+        {
+            if (_dependencyLoadTask == null || !_dependencyLoadTask.IsCompleted)
+            {
+                return;
+            }
+
+            EditorApplication.update -= PollDependencyLoadTask;
+            Task<BuildLayoutParseResult> completedTask = _dependencyLoadTask;
+            string completedSourcePath = _dependencyLoadSourcePath;
+            _dependencyLoadTask = null;
+            _dependencyLoadSourcePath = string.Empty;
+            _dependencyLoadInProgress = false;
+
+            if (_report == null || !string.Equals(_report.SourcePath, completedSourcePath, StringComparison.OrdinalIgnoreCase))
+            {
+                Repaint();
+                return;
+            }
+
+            if (completedTask.IsFaulted)
+            {
+                string message = completedTask.Exception?.GetBaseException().Message ?? "Unknown error.";
+                ShowStatus($"Could not load dependency graph: {message}", StatusKind.Error);
+                ClearDependencySelection("Dependency graph could not be loaded for this report.");
+                Repaint();
+                return;
+            }
+
+            ApplyDependencyLoadResult(completedTask.Result);
+            Repaint();
+        }
+
+        private void ApplyDependencyLoadResult(BuildLayoutParseResult result)
+        {
+            if (!result.Success)
+            {
+                _generateAiReportAfterDependencyLoad = false;
+                ShowStatus($"Could not load dependency graph: {result.ErrorMessage}", StatusKind.Error);
+                ClearDependencySelection("Dependency graph could not be loaded for this report.");
+                RefreshListView(_dependencySearchListView, 0, _dependencyEmptyState);
+                return;
+            }
+
+            _report.Dependencies.Clear();
+            _report.Dependencies.AddRange(result.Report.Dependencies);
+            _report.DependenciesLoaded = true;
+            RebuildReportServices();
+            ShowStatus($"Loaded dependency graph with {_report.Dependencies.Count} edges.", StatusKind.Success);
+            RefreshDependencySearch();
+            if (_activeTab == ActiveTab.Optimization)
+            {
+                RefreshOptimizationView();
+            }
+
+            if (_generateAiReportAfterDependencyLoad)
+            {
+                _generateAiReportAfterDependencyLoad = false;
+                QueueAiReportGeneration(_queuedAiReportMode);
+            }
+        }
+
+        private void ShowDependencyLoadingState()
+        {
+            _dependencySearchResults.Clear();
+            if (_dependencyEmptyState != null)
+            {
+                _dependencyEmptyState.text = "Loading dependency graph...";
+            }
+
+            RefreshListView(_dependencySearchListView, 0, _dependencyEmptyState);
+            if (_dependencyTreeContainer != null)
+            {
+                _dependencyTreeContainer.Clear();
+                _dependencyTreeContainer.Add(CreateLoadingState("Loading dependency graph..."));
+            }
+
+            if (_dependencyDetailsContainer != null)
+            {
+                _dependencyDetailsContainer.Clear();
+                _dependencyDetailsContainer.Add(CreateLoadingState("Preparing dependency details..."));
+            }
+
+            ShowStatus("Loading dependency graph...", StatusKind.Neutral);
+            Repaint();
+        }
+
+        private void QueueOptimizationGeneration()
+        {
+            ShowOptimizationLoadingState();
+            if (_optimizationGenerationQueued)
+            {
+                return;
+            }
+
+            _optimizationGenerationQueued = true;
+            EditorApplication.delayCall += GenerateOptimizationReportDelayed;
+        }
+
+        private void GenerateOptimizationReportDelayed()
+        {
+            _optimizationGenerationQueued = false;
+            if (_report == null || _optimizationReport != null)
+            {
+                return;
+            }
+
+            EnsureOptimizationReport();
+            RenderOptimizationDashboard();
+            RefreshOptimizationTable();
+            Repaint();
+        }
+
+        private void ShowOptimizationLoadingState()
+        {
+            _visibleOptimizationCandidates.Clear();
+            _optimizationDashboardContainer.Clear();
+            _optimizationInsightsContainer.Clear();
+            _optimizationDashboardContainer.Add(CreateLoadingState("Loading optimization recommendations..."));
+            if (_optimizationEmptyState != null)
+            {
+                _optimizationEmptyState.text = "Loading optimization recommendations...";
+            }
+
+            RefreshListView(_optimizationListView, 0, _optimizationEmptyState);
         }
 
         private void RenderOptimizationDashboard()
@@ -1560,24 +2554,46 @@ namespace AddressablesBuildInspector.Editor.Windows
                 return;
             }
 
-            AddStatCard(_optimizationDashboardContainer, "Duplicate Waste", ByteFormatter.FormatBytes(_optimizationReport.TotalDuplicateWasteBytes));
-            AddStatCard(_optimizationDashboardContainer, "Potential Savings", ByteFormatter.FormatBytes(_optimizationReport.PotentialSavingsBytes));
-            AddStatCard(_optimizationDashboardContainer, "Candidates", _optimizationReport.Candidates.Count.ToString(CultureInfo.InvariantCulture));
-            AddStatCard(_optimizationDashboardContainer, "Critical Issues", _optimizationReport.CriticalIssueCount.ToString(CultureInfo.InvariantCulture));
-            AddStatCard(_optimizationDashboardContainer, "Predicted Waste", ByteFormatter.FormatBytes(_optimizationReport.Simulation.PredictedDuplicateWasteBytes));
+            OptimizationCandidate topCandidate = _optimizationReport.Candidates
+                .OrderByDescending(candidate => candidate.Impact?.PotentialSavingsBytes ?? candidate.DuplicateWasteBytes)
+                .FirstOrDefault();
+            AddStatCard(_optimizationDashboardContainer, "Potential Savings", ByteFormatter.FormatBytes(_optimizationReport.PotentialSavingsBytes), GetWasteCardClass(_optimizationReport.PotentialSavingsBytes));
+            AddStatCard(_optimizationDashboardContainer, "Critical Issues", _optimizationReport.CriticalIssueCount.ToString(CultureInfo.InvariantCulture), _optimizationReport.CriticalIssueCount > 0 ? "abi-card-danger" : "abi-card-success");
+            AddStatCard(_optimizationDashboardContainer, "Top Optimization Candidate", topCandidate?.Asset?.Name ?? "None", null, null, topCandidate == null ? null : ByteFormatter.FormatBytes(topCandidate.Impact.PotentialSavingsBytes));
+            AddStatCard(_optimizationDashboardContainer, "ROI Score", FormatRoiScore(_optimizationReport), null, null, "Savings / duplicate waste");
+            AddStatCard(_optimizationDashboardContainer, "Estimated Patch Reduction", ByteFormatter.FormatBytes(_optimizationReport.Simulation.EstimatedPatchReductionBytes));
 
-            var heading = CreatePaneHeading("Optimization Insights");
+            var heading = CreateSectionTitle("Optimization Insights", "Recommendation cards generated from duplicate waste and simulated savings.");
             _optimizationInsightsContainer.Add(heading);
             if (_optimizationReport.Insights.Count == 0)
             {
-                _optimizationInsightsContainer.Add(new Label("No duplicate optimization issues found."));
+                _optimizationInsightsContainer.Add(CreateInsightCard(
+                    "OK",
+                    "No Duplicate Optimization Issues",
+                    "The loaded report does not contain duplicate waste candidates that require action.",
+                    OptimizationSeverity.Low));
                 return;
             }
 
             foreach (OptimizationInsight insight in _optimizationReport.Insights)
             {
-                _optimizationInsightsContainer.Add(new Label($"{insight.Rank}. {insight.Message}"));
+                _optimizationInsightsContainer.Add(CreateInsightCard(
+                    insight.Rank.ToString(CultureInfo.InvariantCulture),
+                    "Recommendation " + insight.Rank.ToString(CultureInfo.InvariantCulture),
+                    insight.Message,
+                    EstimateSeverity(_optimizationReport.PotentialSavingsBytes, _optimizationReport.TotalDuplicateWasteBytes)));
             }
+        }
+
+        private static string FormatRoiScore(OptimizationReport report)
+        {
+            if (report == null || report.TotalDuplicateWasteBytes <= 0)
+            {
+                return "0%";
+            }
+
+            double ratio = (double)report.PotentialSavingsBytes / report.TotalDuplicateWasteBytes;
+            return Math.Min(100, Math.Round(ratio * 100)).ToString(CultureInfo.InvariantCulture) + "%";
         }
 
         private void RefreshOptimizationTable()
@@ -1598,8 +2614,7 @@ namespace AddressablesBuildInspector.Editor.Windows
 
             IEnumerable<OptimizationCandidate> rows = _optimizationReport.Candidates
                 .Where(candidate => candidate.Asset != null)
-                .Where(candidate => SearchUtility.Matches(_searchQuery, candidate.Asset.Name, candidate.Asset.Path))
-                .Where(candidate => MatchesLocationFilter(candidate.Asset));
+                .Where(candidate => SearchUtility.Matches(_searchQuery, candidate.Asset.Name, candidate.Asset.Path));
 
             rows = SortOptimizationCandidates(rows);
             ReplaceList(_visibleOptimizationCandidates, rows);
@@ -1637,7 +2652,8 @@ namespace AddressablesBuildInspector.Editor.Windows
         private void RenderOptimizationDetails(OptimizationCandidate candidate)
         {
             _optimizationDetailsContainer.Clear();
-            _optimizationDetailsContainer.Add(CreatePaneHeading("Candidate Details"));
+            _optimizationDetailsContainer.Add(CreateSectionTitle("Candidate Details", "Why this issue is worth fixing and how risky the change is."));
+            _optimizationDetailsContainer.Add(CreateOptimizationSummaryCard(candidate));
             _optimizationDetailsContainer.Add(CreateDetailLabel("Asset", candidate.Asset?.Name ?? "Unknown"));
             _optimizationDetailsContainer.Add(CreateDetailLabel("Path", candidate.Asset?.Path ?? string.Empty));
             _optimizationDetailsContainer.Add(CreateDetailLabel("Bundle Count", candidate.BundleCount.ToString(CultureInfo.InvariantCulture)));
@@ -1648,11 +2664,13 @@ namespace AddressablesBuildInspector.Editor.Windows
             _optimizationDetailsContainer.Add(CreateDetailLabel("Recommendation", FormatRecommendation(candidate.Recommendation)));
             _optimizationDetailsContainer.Add(CreateDetailLabel("Confidence", candidate.Impact.Confidence.ToString("P0", CultureInfo.InvariantCulture)));
 
+            _optimizationService?.PopulateDependencyPaths(candidate);
+
             var bundlesHeading = CreatePaneHeading("Affected Bundles");
             _optimizationDetailsContainer.Add(bundlesHeading);
             foreach (string bundleName in candidate.Asset.BundleNames.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(name => name, StringComparer.OrdinalIgnoreCase))
             {
-                _optimizationDetailsContainer.Add(new Label($"{bundleName} ({FormatBundleLocation(ResolveBundleLocation(bundleName))})"));
+                _optimizationDetailsContainer.Add(new Label(bundleName));
             }
 
             var pathsHeading = CreatePaneHeading("Dependency Paths");
@@ -1669,9 +2687,39 @@ namespace AddressablesBuildInspector.Editor.Windows
             }
         }
 
+        private static VisualElement CreateOptimizationSummaryCard(OptimizationCandidate candidate)
+        {
+            var card = new VisualElement();
+            card.AddToClassList("abi-optimization-summary-card");
+
+            var title = new Label(candidate.Asset?.Name ?? "Unknown Asset");
+            title.AddToClassList("abi-optimization-summary-title");
+            card.Add(title);
+
+            var savings = new Label(ByteFormatter.FormatBytes(candidate.Impact.PotentialSavingsBytes));
+            savings.AddToClassList("abi-optimization-summary-value");
+            card.Add(savings);
+
+            var meta = new Label("Potential savings | " + FormatRecommendation(candidate.Recommendation));
+            meta.AddToClassList("abi-optimization-summary-meta");
+            card.Add(meta);
+
+            var severity = new Label();
+            severity.AddToClassList("abi-severity-pill");
+            SetSeverityPill(severity, candidate.Severity);
+            card.Add(severity);
+            return card;
+        }
+
         private void RefreshDependencySearch()
         {
             _dependencySearchResults.Clear();
+            if (_report != null && !_report.DependenciesLoaded)
+            {
+                QueueDependencyLoad();
+                return;
+            }
+
             if (_dependencySearchService == null)
             {
                 _dependencyEmptyState.text = "Load a report to search dependency assets.";
@@ -1694,6 +2742,12 @@ namespace AddressablesBuildInspector.Editor.Windows
 
         private void ShowDependencyTree(string assetPath)
         {
+            if (_report != null && !_report.DependenciesLoaded)
+            {
+                QueueDependencyLoad();
+                return;
+            }
+
             if (_dependencyTreeBuilder == null)
             {
                 ClearDependencySelection("Load a report before inspecting dependencies.");
@@ -1769,15 +2823,23 @@ namespace AddressablesBuildInspector.Editor.Windows
 
             if (referencedBy.Count == 0)
             {
-                _dependencyDetailsContainer.Add(new Label("No direct references found."));
+                _dependencyDetailsContainer.Add(CreateDependencyReferenceLabel("No direct references found."));
             }
             else
             {
                 foreach (DependencyNode reference in referencedBy.Take(20))
                 {
-                    _dependencyDetailsContainer.Add(new Label(reference.AssetPath));
+                    _dependencyDetailsContainer.Add(CreateDependencyReferenceLabel(reference.AssetPath));
                 }
             }
+        }
+
+        private static Label CreateDependencyReferenceLabel(string text)
+        {
+            var label = new Label(text);
+            label.AddToClassList("abi-dependency-reference");
+            label.tooltip = text;
+            return label;
         }
 
         private void ClearDependencySelection(string message)
@@ -1803,6 +2865,39 @@ namespace AddressablesBuildInspector.Editor.Windows
             return row;
         }
 
+        private static VisualElement CreateLoadingState(string message)
+        {
+            var container = new VisualElement();
+            container.AddToClassList("abi-loading-state");
+
+            var label = new Label(message);
+            label.AddToClassList("abi-loading-label");
+
+            var track = new VisualElement();
+            track.AddToClassList("abi-loading-track");
+
+            var fill = new VisualElement();
+            fill.AddToClassList("abi-loading-fill");
+
+            track.Add(fill);
+            container.Add(label);
+            container.Add(track);
+            StartLoadingAnimation(fill);
+            return container;
+        }
+
+        private static void StartLoadingAnimation(VisualElement fill)
+        {
+            int frame = 0;
+            fill.schedule.Execute(() =>
+            {
+                frame = (frame + 1) % 120;
+                float normalized = frame / 119f;
+                float leftPercent = -28f + normalized * 128f;
+                fill.style.left = Length.Percent(leftPercent);
+            }).Every(LoadingAnimationIntervalMs);
+        }
+
         private void RenderDiffOverview()
         {
             if (_diffOverviewContainer == null)
@@ -1824,13 +2919,14 @@ namespace AddressablesBuildInspector.Editor.Windows
 
             var grid = new VisualElement();
             grid.AddToClassList("abi-overview-grid");
+            grid.AddToClassList("abi-diff-stat-grid");
             _diffOverviewContainer.Add(grid);
-            AddStatCard(grid, "Old Build Size", ByteFormatter.FormatBytes(oldSize));
-            AddStatCard(grid, "New Build Size", ByteFormatter.FormatBytes(newSize));
-            AddStatCard(grid, "Total Growth", FormatSignedBytes(_diffReport.TotalSizeDelta));
-            AddStatCard(grid, "Bundle Count Delta", FormatSignedCount(_diffReport.NewBuild.Bundles.Count - _diffReport.OldBuild.Bundles.Count));
-            AddStatCard(grid, "Asset Count Delta", FormatSignedCount(_diffReport.NewBuild.Assets.Count - _diffReport.OldBuild.Assets.Count));
-            AddStatCard(grid, "Duplicate Waste Delta", FormatSignedBytes(newWaste - oldWaste));
+            AddDiffStatCard(grid, "Old Build Size", ByteFormatter.FormatBytes(oldSize));
+            AddDiffStatCard(grid, "New Build Size", ByteFormatter.FormatBytes(newSize));
+            AddDiffStatCard(grid, "Total Growth", FormatSignedBytes(_diffReport.TotalSizeDelta));
+            AddDiffStatCard(grid, "Bundle Count Delta", FormatSignedCount(_diffReport.NewBuild.Bundles.Count - _diffReport.OldBuild.Bundles.Count));
+            AddDiffStatCard(grid, "Asset Count Delta", FormatSignedCount(_diffReport.NewBuild.Assets.Count - _diffReport.OldBuild.Assets.Count));
+            AddDiffStatCard(grid, "Duplicate Waste Delta", FormatSignedBytes(newWaste - oldWaste));
         }
 
         private void RenderDiffInsights()
@@ -1841,12 +2937,15 @@ namespace AddressablesBuildInspector.Editor.Windows
                 return;
             }
 
-            var heading = new Label("Smart Insights");
-            heading.AddToClassList("abi-detail-heading");
+            var heading = CreateSectionTitle("Smart Insights", "Build growth, duplicate regressions, and major contributors.");
             _diffInsightsContainer.Add(heading);
             foreach (DiffInsight insight in _diffReport.Insights)
             {
-                _diffInsightsContainer.Add(new Label($"{insight.Rank}. {insight.Message}"));
+                _diffInsightsContainer.Add(CreateInsightCard(
+                    insight.Rank.ToString(CultureInfo.InvariantCulture),
+                    "Diff Insight " + insight.Rank.ToString(CultureInfo.InvariantCulture),
+                    insight.Message,
+                    _diffReport.TotalSizeDelta > 0 ? OptimizationSeverity.Medium : OptimizationSeverity.Low));
             }
         }
 
@@ -1994,7 +3093,6 @@ namespace AddressablesBuildInspector.Editor.Windows
         private sealed class BundleRowElements
         {
             public Label Name;
-            public Label Location;
             public Label Size;
             public Label AssetCount;
         }
@@ -2048,6 +3146,12 @@ namespace AddressablesBuildInspector.Editor.Windows
             public Label NewSize;
             public Label Delta;
             public Label Status;
+        }
+
+        private sealed class AiReportGenerationResult
+        {
+            public string Prompt;
+            public OptimizationReport OptimizationReport;
         }
     }
 }

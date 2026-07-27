@@ -118,12 +118,13 @@ namespace AddressablesBuildInspector.Editor.Dependencies
         /// </summary>
         public IReadOnlyList<DependencyChainInfo> GetLargestDependencyChains(int maxCount = 10)
         {
+            var depthCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             return _report.Assets
                 .Select(asset => new DependencyChainInfo
                 {
                     RootAssetName = asset.Name,
                     RootAssetPath = asset.Path,
-                    Depth = CalculateDepth(asset.Path, new HashSet<string>(StringComparer.OrdinalIgnoreCase))
+                    Depth = CalculateDepth(asset.Path, depthCache, new HashSet<string>(StringComparer.OrdinalIgnoreCase))
                 })
                 .Where(chain => chain.Depth > 1)
                 .OrderByDescending(chain => chain.Depth)
@@ -169,10 +170,15 @@ namespace AddressablesBuildInspector.Editor.Dependencies
             };
         }
 
-        private int CalculateDepth(string assetPath, HashSet<string> visited)
+        private int CalculateDepth(string assetPath, IDictionary<string, int> depthCache, HashSet<string> recursionStack)
         {
             string normalizedPath = NormalizePath(assetPath);
-            if (!visited.Add(normalizedPath))
+            if (depthCache.TryGetValue(normalizedPath, out int cachedDepth))
+            {
+                return cachedDepth;
+            }
+
+            if (!recursionStack.Add(normalizedPath))
             {
                 return 1;
             }
@@ -180,10 +186,13 @@ namespace AddressablesBuildInspector.Editor.Dependencies
             int maxChildDepth = 0;
             foreach (DependencyNode dependency in GetDependencies(normalizedPath))
             {
-                maxChildDepth = Math.Max(maxChildDepth, CalculateDepth(dependency.AssetPath, new HashSet<string>(visited, StringComparer.OrdinalIgnoreCase)));
+                maxChildDepth = Math.Max(maxChildDepth, CalculateDepth(dependency.AssetPath, depthCache, recursionStack));
             }
 
-            return 1 + maxChildDepth;
+            recursionStack.Remove(normalizedPath);
+            int depth = 1 + maxChildDepth;
+            depthCache[normalizedPath] = depth;
+            return depth;
         }
 
         private void EnsureReferencedByIndex()

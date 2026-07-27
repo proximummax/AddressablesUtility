@@ -18,9 +18,8 @@ After the report is generated:
 2. Click `Load Report`.
 3. Select the generated text or supported JSON report.
 4. Review the Overview, Duplicates, and Optimization tabs first.
-5. Use the toolbar `Location` filter to inspect Remote and Local bundles separately.
-6. Open Dependencies to inspect why assets are included.
-7. Open Build Diff to compare two generated reports.
+5. Open Dependencies to inspect why assets are included.
+6. Open Build Diff to compare two generated reports.
 
 ## Recommended Workflow
 

@@ -20,6 +20,7 @@ namespace AddressablesBuildInspector.Editor.Optimization
         private readonly DependencyPathTracer _pathTracer;
         private readonly SharedGroupAdvisor _sharedGroupAdvisor;
         private readonly OptimizationInsightGenerator _insightGenerator;
+        private readonly bool _includeDependencyPaths;
 
         /// <summary>
         /// Creates an optimization analyzer.
@@ -29,13 +30,15 @@ namespace AddressablesBuildInspector.Editor.Optimization
             DuplicateCauseAnalyzer causeAnalyzer = null,
             DependencyPathTracer pathTracer = null,
             SharedGroupAdvisor sharedGroupAdvisor = null,
-            OptimizationInsightGenerator insightGenerator = null)
+            OptimizationInsightGenerator insightGenerator = null,
+            bool includeDependencyPaths = true)
         {
             _graphService = graphService ?? throw new ArgumentNullException(nameof(graphService));
             _causeAnalyzer = causeAnalyzer ?? new DuplicateCauseAnalyzer();
             _pathTracer = pathTracer ?? new DependencyPathTracer(_graphService);
             _sharedGroupAdvisor = sharedGroupAdvisor ?? new SharedGroupAdvisor();
             _insightGenerator = insightGenerator ?? new OptimizationInsightGenerator();
+            _includeDependencyPaths = includeDependencyPaths;
         }
 
         /// <summary>
@@ -70,7 +73,11 @@ namespace AddressablesBuildInspector.Editor.Optimization
                     Impact = CreateImpact(wasteBytes, bundleCount)
                 };
 
-                candidate.DependencyPaths.AddRange(_pathTracer.TracePaths(asset));
+                if (_includeDependencyPaths)
+                {
+                    candidate.DependencyPaths.AddRange(_pathTracer.TracePaths(asset));
+                }
+
                 optimization.Candidates.Add(candidate);
             }
 

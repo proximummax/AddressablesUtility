@@ -1,6 +1,6 @@
 # Addressables Build Inspector
 
-Addressables Build Inspector is a Unity Editor-only tool for inspecting Addressables Build Layout reports. It highlights bundle sizes, largest assets, duplicated assets, local/remote bundle placement, estimated duplicate waste, dependency paths, build diffs, and duplicate optimization recommendations.
+Addressables Build Inspector is a Unity Editor-only tool for inspecting Addressables Build Layout reports. It highlights bundle sizes, largest assets, duplicated assets, estimated duplicate waste, dependency paths, build diffs, and duplicate optimization recommendations.
 
 ## Requirements
 
@@ -21,15 +21,13 @@ The window remembers the last successfully loaded report path with `EditorPrefs`
 
 ## Main Views
 
-- `Overview`: total build size, bundle count, asset count, duplicate count, estimated duplicate waste, largest bundle, largest asset, and local/remote bundle counts.
-- `Bundles`: sortable bundle table with name, local/remote location, size, and asset count.
+- `Overview`: total build size, bundle count, asset count, duplicate count, estimated duplicate waste, largest bundle, and largest asset.
+- `Bundles`: sortable bundle table with name, size, and asset count.
 - `Assets`: sortable asset table with name, path, size, and bundle count.
 - `Duplicates`: duplicated assets sorted by estimated waste.
 - `Optimization`: duplicate cause classification, shared-group recommendations, simulated savings, dependency paths, and CSV/JSON/Markdown export.
 - `Dependencies`: search all report assets, inspect dependency trees, and see reverse references.
 - `Build Diff`: compare old and new Build Layout reports, review growth reasons, duplicate regression, and export CSV or JSON.
-
-Use the toolbar `Location` filter to inspect `All`, `Remote`, or `Local` bundles and assets. Assets that appear in both remote and local bundles are visible in both filtered views.
 
 Table headers are clickable sort controls. Headers include a visible `Sort` marker and a tooltip.
 
@@ -42,12 +40,9 @@ JSON reports should use this schema:
   "bundles": [
     {
       "name": "remote.bundle",
-      "sizeBytes": 2048,
-      "location": "Remote",
-      "loadPath": "https://cdn.example.com/remote.bundle",
-      "isRemote": true,
+      "FileSize": 2048,
       "assets": [
-        { "name": "Hero.png", "path": "Assets/Textures/Hero.png", "sizeBytes": 1024 }
+        { "name": "Hero.png", "path": "Assets/Textures/Hero.png", "Size": 1024 }
       ]
     }
   ],
@@ -57,7 +52,7 @@ JSON reports should use this schema:
 }
 ```
 
-`location`, `loadPath`, and `isRemote` are optional. The parser infers `Remote` from HTTP URLs and remote markers, and infers `Local` from local markers.
+Bundle and asset size fields can use `sizeBytes`, `SizeBytes`, `FileSize`, `Size`, or `TotalSize` depending on the report producer.
 
 ## Duplicate Waste Formula
 

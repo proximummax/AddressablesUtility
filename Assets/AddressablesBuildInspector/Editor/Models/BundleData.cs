@@ -39,11 +39,6 @@ namespace AddressablesBuildInspector.Editor.Models
         public long SizeBytes { get; set; }
 
         /// <summary>
-        /// Inferred bundle delivery location.
-        /// </summary>
-        public BundleLocation Location { get; set; } = BundleLocation.Unknown;
-
-        /// <summary>
         /// Assets reported under this bundle.
         /// </summary>
         public List<AssetData> Assets { get; } = new List<AssetData>();

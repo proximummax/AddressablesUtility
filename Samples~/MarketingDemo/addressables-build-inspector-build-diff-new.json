@@ -1,0 +1,568 @@
+{
+  "metadata": {
+    "name": "Addressables Build Inspector Build Diff Demo - New Build",
+    "purpose": "Synthetic new build report for Unity Asset Store Build Diff screenshots."
+  },
+  "bundles": [
+    {
+      "name": "city_environment.bundle",
+      "sizeBytes": 354418688,
+      "assets": [
+        {
+          "name": "Environment_Atlas_4K.png",
+          "path": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png",
+          "sizeBytes": 50331648
+        },
+        {
+          "name": "New_city_environment_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/city_environment/asset_1.asset",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "New_city_environment_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/city_environment/asset_2.asset",
+          "sizeBytes": 28311552
+        },
+        {
+          "name": "New_city_environment_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/city_environment/asset_3.asset",
+          "sizeBytes": 6291456
+        },
+        {
+          "name": "New_city_environment_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/city_environment/asset_4.asset",
+          "sizeBytes": 9437184
+        },
+        {
+          "name": "New_city_environment_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/city_environment/asset_5.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "New_city_environment_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/city_environment/asset_6.asset",
+          "sizeBytes": 15728640
+        }
+      ]
+    },
+    {
+      "name": "mall_environment.bundle",
+      "sizeBytes": 289406976,
+      "assets": [
+        {
+          "name": "Environment_Atlas_4K.png",
+          "path": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png",
+          "sizeBytes": 50331648
+        },
+        {
+          "name": "New_mall_environment_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/mall_environment/asset_1.asset",
+          "sizeBytes": 6291456
+        },
+        {
+          "name": "New_mall_environment_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/mall_environment/asset_2.asset",
+          "sizeBytes": 10485760
+        },
+        {
+          "name": "New_mall_environment_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/mall_environment/asset_3.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "New_mall_environment_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/mall_environment/asset_4.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "New_mall_environment_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/mall_environment/asset_5.asset",
+          "sizeBytes": 23068672
+        },
+        {
+          "name": "New_mall_environment_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/mall_environment/asset_6.asset",
+          "sizeBytes": 27262976
+        }
+      ]
+    },
+    {
+      "name": "cafe_environment.bundle",
+      "sizeBytes": 205520896,
+      "assets": [
+        {
+          "name": "New_cafe_environment_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/cafe_environment/asset_1.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "New_cafe_environment_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/cafe_environment/asset_2.asset",
+          "sizeBytes": 17825792
+        },
+        {
+          "name": "New_cafe_environment_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/cafe_environment/asset_3.asset",
+          "sizeBytes": 23068672
+        },
+        {
+          "name": "New_cafe_environment_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/cafe_environment/asset_4.asset",
+          "sizeBytes": 28311552
+        },
+        {
+          "name": "New_cafe_environment_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/cafe_environment/asset_5.asset",
+          "sizeBytes": 8388608
+        },
+        {
+          "name": "New_cafe_environment_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/cafe_environment/asset_6.asset",
+          "sizeBytes": 13631488
+        }
+      ]
+    },
+    {
+      "name": "city_audio.bundle",
+      "sizeBytes": 132120576,
+      "assets": [
+        {
+          "name": "WinterEvent_Music_Loop.wav",
+          "path": "Assets/Audio/Events/WinterEvent_Music_Loop.wav",
+          "sizeBytes": 44040192
+        },
+        {
+          "name": "New_city_audio_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/city_audio/asset_1.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "New_city_audio_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/city_audio/asset_2.asset",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "New_city_audio_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/city_audio/asset_3.asset",
+          "sizeBytes": 6291456
+        },
+        {
+          "name": "New_city_audio_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/city_audio/asset_4.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "New_city_audio_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/city_audio/asset_5.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "New_city_audio_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/city_audio/asset_6.asset",
+          "sizeBytes": 25165824
+        }
+      ]
+    },
+    {
+      "name": "ui_core.bundle",
+      "sizeBytes": 113246208,
+      "assets": [
+        {
+          "name": "Shared_Ui_IconAtlas.png",
+          "path": "Assets/UI/Shared/Shared_Ui_IconAtlas.png",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "New_ui_core_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/ui_core/asset_1.asset",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "New_ui_core_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/ui_core/asset_2.asset",
+          "sizeBytes": 7340032
+        },
+        {
+          "name": "New_ui_core_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/ui_core/asset_3.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "New_ui_core_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/ui_core/asset_4.asset",
+          "sizeBytes": 22020096
+        },
+        {
+          "name": "New_ui_core_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/ui_core/asset_5.asset",
+          "sizeBytes": 29360128
+        },
+        {
+          "name": "New_ui_core_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/ui_core/asset_6.asset",
+          "sizeBytes": 11534336
+        }
+      ]
+    },
+    {
+      "name": "avatar_core.bundle",
+      "sizeBytes": 327155712,
+      "assets": [
+        {
+          "name": "HeroCharacter_Common.mat",
+          "path": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "New_avatar_core_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/avatar_core/asset_1.asset",
+          "sizeBytes": 6291456
+        },
+        {
+          "name": "New_avatar_core_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/avatar_core/asset_2.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "New_avatar_core_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/avatar_core/asset_3.asset",
+          "sizeBytes": 23068672
+        },
+        {
+          "name": "New_avatar_core_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/avatar_core/asset_4.asset",
+          "sizeBytes": 6291456
+        },
+        {
+          "name": "New_avatar_core_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/avatar_core/asset_5.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "New_avatar_core_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/avatar_core/asset_6.asset",
+          "sizeBytes": 23068672
+        }
+      ]
+    },
+    {
+      "name": "avatar_customization.bundle",
+      "sizeBytes": 234881024,
+      "assets": [
+        {
+          "name": "HeroCharacter_Common.mat",
+          "path": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "New_avatar_customization_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/avatar_customization/asset_1.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "New_avatar_customization_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/avatar_customization/asset_2.asset",
+          "sizeBytes": 22020096
+        },
+        {
+          "name": "New_avatar_customization_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/avatar_customization/asset_3.asset",
+          "sizeBytes": 6291456
+        },
+        {
+          "name": "New_avatar_customization_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/avatar_customization/asset_4.asset",
+          "sizeBytes": 15728640
+        },
+        {
+          "name": "New_avatar_customization_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/avatar_customization/asset_5.asset",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "New_avatar_customization_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/avatar_customization/asset_6.asset",
+          "sizeBytes": 9437184
+        }
+      ]
+    },
+    {
+      "name": "tutorial_scenes.bundle",
+      "sizeBytes": 157286400,
+      "assets": [
+        {
+          "name": "New_tutorial_scenes_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/tutorial_scenes/asset_1.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "New_tutorial_scenes_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/tutorial_scenes/asset_2.asset",
+          "sizeBytes": 29360128
+        },
+        {
+          "name": "New_tutorial_scenes_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/tutorial_scenes/asset_3.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "New_tutorial_scenes_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/tutorial_scenes/asset_4.asset",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "New_tutorial_scenes_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/tutorial_scenes/asset_5.asset",
+          "sizeBytes": 10485760
+        },
+        {
+          "name": "New_tutorial_scenes_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/tutorial_scenes/asset_6.asset",
+          "sizeBytes": 20971520
+        }
+      ]
+    },
+    {
+      "name": "shared_assets.bundle",
+      "sizeBytes": 127926272,
+      "assets": [
+        {
+          "name": "Environment_Atlas_4K.png",
+          "path": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png",
+          "sizeBytes": 50331648
+        },
+        {
+          "name": "New_shared_assets_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/shared_assets/asset_1.asset",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "New_shared_assets_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/shared_assets/asset_2.asset",
+          "sizeBytes": 11534336
+        },
+        {
+          "name": "New_shared_assets_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/shared_assets/asset_3.asset",
+          "sizeBytes": 23068672
+        },
+        {
+          "name": "New_shared_assets_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/shared_assets/asset_4.asset",
+          "sizeBytes": 9437184
+        },
+        {
+          "name": "New_shared_assets_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/shared_assets/asset_5.asset",
+          "sizeBytes": 20971520
+        },
+        {
+          "name": "New_shared_assets_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/shared_assets/asset_6.asset",
+          "sizeBytes": 7340032
+        }
+      ]
+    },
+    {
+      "name": "seasonal_event_2026.bundle",
+      "sizeBytes": 255852544,
+      "assets": [
+        {
+          "name": "Environment_Atlas_4K.png",
+          "path": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png",
+          "sizeBytes": 50331648
+        },
+        {
+          "name": "Shared_Ui_IconAtlas.png",
+          "path": "Assets/UI/Shared/Shared_Ui_IconAtlas.png",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "HeroCharacter_Common.mat",
+          "path": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "WinterEvent_Music_Loop.wav",
+          "path": "Assets/Audio/Events/WinterEvent_Music_Loop.wav",
+          "sizeBytes": 44040192
+        },
+        {
+          "name": "New_seasonal_event_2026_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/seasonal_event_2026/asset_1.asset",
+          "sizeBytes": 6291456
+        },
+        {
+          "name": "New_seasonal_event_2026_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/seasonal_event_2026/asset_2.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "New_seasonal_event_2026_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/seasonal_event_2026/asset_3.asset",
+          "sizeBytes": 6291456
+        },
+        {
+          "name": "New_seasonal_event_2026_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/seasonal_event_2026/asset_4.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "New_seasonal_event_2026_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/seasonal_event_2026/asset_5.asset",
+          "sizeBytes": 6291456
+        },
+        {
+          "name": "New_seasonal_event_2026_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/seasonal_event_2026/asset_6.asset",
+          "sizeBytes": 18874368
+        }
+      ]
+    },
+    {
+      "name": "cinematic_intro.bundle",
+      "sizeBytes": 197132288,
+      "assets": [
+        {
+          "name": "Seasonal_Cinematic_Intro.mov",
+          "path": "Assets/Cinematics/Seasonal/Seasonal_Cinematic_Intro.mov",
+          "sizeBytes": 77594624
+        },
+        {
+          "name": "New_cinematic_intro_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/cinematic_intro/asset_1.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "New_cinematic_intro_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/cinematic_intro/asset_2.asset",
+          "sizeBytes": 26214400
+        },
+        {
+          "name": "New_cinematic_intro_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/cinematic_intro/asset_3.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "New_cinematic_intro_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/cinematic_intro/asset_4.asset",
+          "sizeBytes": 28311552
+        },
+        {
+          "name": "New_cinematic_intro_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/cinematic_intro/asset_5.asset",
+          "sizeBytes": 16777216
+        },
+        {
+          "name": "New_cinematic_intro_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/cinematic_intro/asset_6.asset",
+          "sizeBytes": 30408704
+        }
+      ]
+    },
+    {
+      "name": "store_promo_assets.bundle",
+      "sizeBytes": 138412032,
+      "assets": [
+        {
+          "name": "Shared_Ui_IconAtlas.png",
+          "path": "Assets/UI/Shared/Shared_Ui_IconAtlas.png",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "StorePromo_Background_4K.png",
+          "path": "Assets/UI/Store/StorePromo_Background_4K.png",
+          "sizeBytes": 37748736
+        },
+        {
+          "name": "New_store_promo_assets_asset_1.asset",
+          "path": "Assets/MarketingDiff/New/store_promo_assets/asset_1.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "New_store_promo_assets_asset_2.asset",
+          "path": "Assets/MarketingDiff/New/store_promo_assets/asset_2.asset",
+          "sizeBytes": 8388608
+        },
+        {
+          "name": "New_store_promo_assets_asset_3.asset",
+          "path": "Assets/MarketingDiff/New/store_promo_assets/asset_3.asset",
+          "sizeBytes": 23068672
+        },
+        {
+          "name": "New_store_promo_assets_asset_4.asset",
+          "path": "Assets/MarketingDiff/New/store_promo_assets/asset_4.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "New_store_promo_assets_asset_5.asset",
+          "path": "Assets/MarketingDiff/New/store_promo_assets/asset_5.asset",
+          "sizeBytes": 27262976
+        },
+        {
+          "name": "New_store_promo_assets_asset_6.asset",
+          "path": "Assets/MarketingDiff/New/store_promo_assets/asset_6.asset",
+          "sizeBytes": 16777216
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "Assets/MarketingDiff/New/city_environment/asset_1.asset",
+      "target": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/mall_environment/asset_1.asset",
+      "target": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/city_audio/asset_1.asset",
+      "target": "Assets/Audio/Events/WinterEvent_Music_Loop.wav"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/ui_core/asset_1.asset",
+      "target": "Assets/UI/Shared/Shared_Ui_IconAtlas.png"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/avatar_core/asset_1.asset",
+      "target": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/avatar_customization/asset_1.asset",
+      "target": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/shared_assets/asset_1.asset",
+      "target": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/seasonal_event_2026/asset_1.asset",
+      "target": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/seasonal_event_2026/asset_1.asset",
+      "target": "Assets/UI/Shared/Shared_Ui_IconAtlas.png"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/seasonal_event_2026/asset_1.asset",
+      "target": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/seasonal_event_2026/asset_1.asset",
+      "target": "Assets/Audio/Events/WinterEvent_Music_Loop.wav"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/cinematic_intro/asset_1.asset",
+      "target": "Assets/Cinematics/Seasonal/Seasonal_Cinematic_Intro.mov"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/store_promo_assets/asset_1.asset",
+      "target": "Assets/UI/Shared/Shared_Ui_IconAtlas.png"
+    },
+    {
+      "source": "Assets/MarketingDiff/New/store_promo_assets/asset_1.asset",
+      "target": "Assets/UI/Store/StorePromo_Background_4K.png"
+    }
+  ]
+}

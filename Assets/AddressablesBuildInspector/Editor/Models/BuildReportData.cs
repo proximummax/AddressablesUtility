@@ -33,5 +33,10 @@ namespace AddressablesBuildInspector.Editor.Models
         /// Dependency text lines captured for future analysis.
         /// </summary>
         public List<string> Dependencies { get; } = new List<string>();
+
+        /// <summary>
+        /// Whether dependency lines were fully extracted from the source report.
+        /// </summary>
+        public bool DependenciesLoaded { get; set; } = true;
     }
 }

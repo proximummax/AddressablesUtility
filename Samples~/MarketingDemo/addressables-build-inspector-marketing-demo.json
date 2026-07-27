@@ -1,0 +1,937 @@
+{
+  "metadata": {
+    "name": "Addressables Build Inspector Marketing Demo",
+    "purpose": "Synthetic report for Unity Asset Store screenshots and short product videos.",
+    "expectedKpis": {
+      "buildSize": "3.21 GB",
+      "duplicateWaste": "418 MB",
+      "potentialSavings": "418 MB",
+      "healthScore": "72 / 100"
+    }
+  },
+  "bundles": [
+    {
+      "name": "city_environment.bundle",
+      "sizeBytes": 367001600,
+      "assets": [
+        {
+          "name": "Environment_Atlas_4K.png",
+          "path": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png",
+          "sizeBytes": 50331648
+        },
+        {
+          "name": "CommonShaderVariants.asset",
+          "path": "Assets/Rendering/CommonShaderVariants.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "city-environment-content-1.asset",
+          "path": "Assets/MarketingDemo/city-environment/content-1.asset",
+          "sizeBytes": 11534336
+        },
+        {
+          "name": "city-environment-content-2.asset",
+          "path": "Assets/MarketingDemo/city-environment/content-2.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "city-environment-content-3.asset",
+          "path": "Assets/MarketingDemo/city-environment/content-3.asset",
+          "sizeBytes": 13631488
+        },
+        {
+          "name": "city-environment-content-4.asset",
+          "path": "Assets/MarketingDemo/city-environment/content-4.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "city-environment-content-5.asset",
+          "path": "Assets/MarketingDemo/city-environment/content-5.asset",
+          "sizeBytes": 15728640
+        },
+        {
+          "name": "city-environment-content-6.asset",
+          "path": "Assets/MarketingDemo/city-environment/content-6.asset",
+          "sizeBytes": 16777216
+        },
+        {
+          "name": "city-environment-content-7.asset",
+          "path": "Assets/MarketingDemo/city-environment/content-7.asset",
+          "sizeBytes": 17825792
+        }
+      ]
+    },
+    {
+      "name": "mall_environment.bundle",
+      "sizeBytes": 252706816,
+      "assets": [
+        {
+          "name": "Environment_Atlas_4K.png",
+          "path": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png",
+          "sizeBytes": 50331648
+        },
+        {
+          "name": "CommonShaderVariants.asset",
+          "path": "Assets/Rendering/CommonShaderVariants.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "mall-environment-content-1.asset",
+          "path": "Assets/MarketingDemo/mall-environment/content-1.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "mall-environment-content-2.asset",
+          "path": "Assets/MarketingDemo/mall-environment/content-2.asset",
+          "sizeBytes": 16777216
+        },
+        {
+          "name": "mall-environment-content-3.asset",
+          "path": "Assets/MarketingDemo/mall-environment/content-3.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "mall-environment-content-4.asset",
+          "path": "Assets/MarketingDemo/mall-environment/content-4.asset",
+          "sizeBytes": 20971520
+        },
+        {
+          "name": "mall-environment-content-5.asset",
+          "path": "Assets/MarketingDemo/mall-environment/content-5.asset",
+          "sizeBytes": 23068672
+        },
+        {
+          "name": "mall-environment-content-6.asset",
+          "path": "Assets/MarketingDemo/mall-environment/content-6.asset",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "mall-environment-content-7.asset",
+          "path": "Assets/MarketingDemo/mall-environment/content-7.asset",
+          "sizeBytes": 27262976
+        }
+      ]
+    },
+    {
+      "name": "cafe_environment.bundle",
+      "sizeBytes": 207618048,
+      "assets": [
+        {
+          "name": "Environment_Atlas_4K.png",
+          "path": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png",
+          "sizeBytes": 50331648
+        },
+        {
+          "name": "cafe-environment-content-1.asset",
+          "path": "Assets/MarketingDemo/cafe-environment/content-1.asset",
+          "sizeBytes": 17825792
+        },
+        {
+          "name": "cafe-environment-content-2.asset",
+          "path": "Assets/MarketingDemo/cafe-environment/content-2.asset",
+          "sizeBytes": 20971520
+        },
+        {
+          "name": "cafe-environment-content-3.asset",
+          "path": "Assets/MarketingDemo/cafe-environment/content-3.asset",
+          "sizeBytes": 24117248
+        },
+        {
+          "name": "cafe-environment-content-4.asset",
+          "path": "Assets/MarketingDemo/cafe-environment/content-4.asset",
+          "sizeBytes": 27262976
+        },
+        {
+          "name": "cafe-environment-content-5.asset",
+          "path": "Assets/MarketingDemo/cafe-environment/content-5.asset",
+          "sizeBytes": 30408704
+        },
+        {
+          "name": "cafe-environment-content-6.asset",
+          "path": "Assets/MarketingDemo/cafe-environment/content-6.asset",
+          "sizeBytes": 33554432
+        },
+        {
+          "name": "cafe-environment-content-7.asset",
+          "path": "Assets/MarketingDemo/cafe-environment/content-7.asset",
+          "sizeBytes": 36700160
+        }
+      ]
+    },
+    {
+      "name": "park_environment.bundle",
+      "sizeBytes": 220200960,
+      "assets": [
+        {
+          "name": "Environment_Atlas_4K.png",
+          "path": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png",
+          "sizeBytes": 50331648
+        },
+        {
+          "name": "park-environment-content-1.asset",
+          "path": "Assets/MarketingDemo/park-environment/content-1.asset",
+          "sizeBytes": 20971520
+        },
+        {
+          "name": "park-environment-content-2.asset",
+          "path": "Assets/MarketingDemo/park-environment/content-2.asset",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "park-environment-content-3.asset",
+          "path": "Assets/MarketingDemo/park-environment/content-3.asset",
+          "sizeBytes": 29360128
+        },
+        {
+          "name": "park-environment-content-4.asset",
+          "path": "Assets/MarketingDemo/park-environment/content-4.asset",
+          "sizeBytes": 33554432
+        },
+        {
+          "name": "park-environment-content-5.asset",
+          "path": "Assets/MarketingDemo/park-environment/content-5.asset",
+          "sizeBytes": 37748736
+        },
+        {
+          "name": "park-environment-content-6.asset",
+          "path": "Assets/MarketingDemo/park-environment/content-6.asset",
+          "sizeBytes": 11534336
+        },
+        {
+          "name": "park-environment-content-7.asset",
+          "path": "Assets/MarketingDemo/park-environment/content-7.asset",
+          "sizeBytes": 15728640
+        }
+      ]
+    },
+    {
+      "name": "beach_environment.bundle",
+      "sizeBytes": 169869312,
+      "assets": [
+        {
+          "name": "Environment_Atlas_4K.png",
+          "path": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png",
+          "sizeBytes": 50331648
+        },
+        {
+          "name": "beach-environment-content-1.asset",
+          "path": "Assets/MarketingDemo/beach-environment/content-1.asset",
+          "sizeBytes": 24117248
+        },
+        {
+          "name": "beach-environment-content-2.asset",
+          "path": "Assets/MarketingDemo/beach-environment/content-2.asset",
+          "sizeBytes": 29360128
+        },
+        {
+          "name": "beach-environment-content-3.asset",
+          "path": "Assets/MarketingDemo/beach-environment/content-3.asset",
+          "sizeBytes": 34603008
+        },
+        {
+          "name": "beach-environment-content-4.asset",
+          "path": "Assets/MarketingDemo/beach-environment/content-4.asset",
+          "sizeBytes": 9437184
+        },
+        {
+          "name": "beach-environment-content-5.asset",
+          "path": "Assets/MarketingDemo/beach-environment/content-5.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "beach-environment-content-6.asset",
+          "path": "Assets/MarketingDemo/beach-environment/content-6.asset",
+          "sizeBytes": 19922944
+        },
+        {
+          "name": "beach-environment-content-7.asset",
+          "path": "Assets/MarketingDemo/beach-environment/content-7.asset",
+          "sizeBytes": 25165824
+        }
+      ]
+    },
+    {
+      "name": "city_audio.bundle",
+      "sizeBytes": 148897792,
+      "assets": [
+        {
+          "name": "Ambience_City_Loop.wav",
+          "path": "Assets/Audio/Shared/Ambience/Ambience_City_Loop.wav",
+          "sizeBytes": 39845888
+        },
+        {
+          "name": "city-audio-content-1.asset",
+          "path": "Assets/MarketingDemo/city-audio/content-1.asset",
+          "sizeBytes": 27262976
+        },
+        {
+          "name": "city-audio-content-2.asset",
+          "path": "Assets/MarketingDemo/city-audio/content-2.asset",
+          "sizeBytes": 33554432
+        },
+        {
+          "name": "city-audio-content-3.asset",
+          "path": "Assets/MarketingDemo/city-audio/content-3.asset",
+          "sizeBytes": 9437184
+        },
+        {
+          "name": "city-audio-content-4.asset",
+          "path": "Assets/MarketingDemo/city-audio/content-4.asset",
+          "sizeBytes": 15728640
+        },
+        {
+          "name": "city-audio-content-5.asset",
+          "path": "Assets/MarketingDemo/city-audio/content-5.asset",
+          "sizeBytes": 22020096
+        },
+        {
+          "name": "city-audio-content-6.asset",
+          "path": "Assets/MarketingDemo/city-audio/content-6.asset",
+          "sizeBytes": 28311552
+        },
+        {
+          "name": "city-audio-content-7.asset",
+          "path": "Assets/MarketingDemo/city-audio/content-7.asset",
+          "sizeBytes": 34603008
+        }
+      ]
+    },
+    {
+      "name": "mall_audio.bundle",
+      "sizeBytes": 123731968,
+      "assets": [
+        {
+          "name": "Ambience_City_Loop.wav",
+          "path": "Assets/Audio/Shared/Ambience/Ambience_City_Loop.wav",
+          "sizeBytes": 39845888
+        },
+        {
+          "name": "mall-audio-content-1.asset",
+          "path": "Assets/MarketingDemo/mall-audio/content-1.asset",
+          "sizeBytes": 30408704
+        },
+        {
+          "name": "mall-audio-content-2.asset",
+          "path": "Assets/MarketingDemo/mall-audio/content-2.asset",
+          "sizeBytes": 37748736
+        },
+        {
+          "name": "mall-audio-content-3.asset",
+          "path": "Assets/MarketingDemo/mall-audio/content-3.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "mall-audio-content-4.asset",
+          "path": "Assets/MarketingDemo/mall-audio/content-4.asset",
+          "sizeBytes": 22020096
+        },
+        {
+          "name": "mall-audio-content-5.asset",
+          "path": "Assets/MarketingDemo/mall-audio/content-5.asset",
+          "sizeBytes": 29360128
+        },
+        {
+          "name": "mall-audio-content-6.asset",
+          "path": "Assets/MarketingDemo/mall-audio/content-6.asset",
+          "sizeBytes": 36700160
+        },
+        {
+          "name": "mall-audio-content-7.asset",
+          "path": "Assets/MarketingDemo/mall-audio/content-7.asset",
+          "sizeBytes": 13631488
+        }
+      ]
+    },
+    {
+      "name": "cafe_audio.bundle",
+      "sizeBytes": 109051904,
+      "assets": [
+        {
+          "name": "Ambience_City_Loop.wav",
+          "path": "Assets/Audio/Shared/Ambience/Ambience_City_Loop.wav",
+          "sizeBytes": 39845888
+        },
+        {
+          "name": "cafe-audio-content-1.asset",
+          "path": "Assets/MarketingDemo/cafe-audio/content-1.asset",
+          "sizeBytes": 33554432
+        },
+        {
+          "name": "cafe-audio-content-2.asset",
+          "path": "Assets/MarketingDemo/cafe-audio/content-2.asset",
+          "sizeBytes": 11534336
+        },
+        {
+          "name": "cafe-audio-content-3.asset",
+          "path": "Assets/MarketingDemo/cafe-audio/content-3.asset",
+          "sizeBytes": 19922944
+        },
+        {
+          "name": "cafe-audio-content-4.asset",
+          "path": "Assets/MarketingDemo/cafe-audio/content-4.asset",
+          "sizeBytes": 28311552
+        },
+        {
+          "name": "cafe-audio-content-5.asset",
+          "path": "Assets/MarketingDemo/cafe-audio/content-5.asset",
+          "sizeBytes": 36700160
+        },
+        {
+          "name": "cafe-audio-content-6.asset",
+          "path": "Assets/MarketingDemo/cafe-audio/content-6.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "cafe-audio-content-7.asset",
+          "path": "Assets/MarketingDemo/cafe-audio/content-7.asset",
+          "sizeBytes": 23068672
+        }
+      ]
+    },
+    {
+      "name": "ui_core.bundle",
+      "sizeBytes": 100663296,
+      "assets": [
+        {
+          "name": "Shared_Ui_IconAtlas.png",
+          "path": "Assets/UI/Shared/Shared_Ui_IconAtlas.png",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "ui-core-content-1.asset",
+          "path": "Assets/MarketingDemo/ui-core/content-1.asset",
+          "sizeBytes": 36700160
+        },
+        {
+          "name": "ui-core-content-2.asset",
+          "path": "Assets/MarketingDemo/ui-core/content-2.asset",
+          "sizeBytes": 15728640
+        },
+        {
+          "name": "ui-core-content-3.asset",
+          "path": "Assets/MarketingDemo/ui-core/content-3.asset",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "ui-core-content-4.asset",
+          "path": "Assets/MarketingDemo/ui-core/content-4.asset",
+          "sizeBytes": 34603008
+        },
+        {
+          "name": "ui-core-content-5.asset",
+          "path": "Assets/MarketingDemo/ui-core/content-5.asset",
+          "sizeBytes": 13631488
+        },
+        {
+          "name": "ui-core-content-6.asset",
+          "path": "Assets/MarketingDemo/ui-core/content-6.asset",
+          "sizeBytes": 23068672
+        },
+        {
+          "name": "ui-core-content-7.asset",
+          "path": "Assets/MarketingDemo/ui-core/content-7.asset",
+          "sizeBytes": 32505856
+        }
+      ]
+    },
+    {
+      "name": "ui_store.bundle",
+      "sizeBytes": 90177536,
+      "assets": [
+        {
+          "name": "Shared_Ui_IconAtlas.png",
+          "path": "Assets/UI/Shared/Shared_Ui_IconAtlas.png",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "ui-store-content-1.asset",
+          "path": "Assets/MarketingDemo/ui-store/content-1.asset",
+          "sizeBytes": 9437184
+        },
+        {
+          "name": "ui-store-content-2.asset",
+          "path": "Assets/MarketingDemo/ui-store/content-2.asset",
+          "sizeBytes": 19922944
+        },
+        {
+          "name": "ui-store-content-3.asset",
+          "path": "Assets/MarketingDemo/ui-store/content-3.asset",
+          "sizeBytes": 30408704
+        },
+        {
+          "name": "ui-store-content-4.asset",
+          "path": "Assets/MarketingDemo/ui-store/content-4.asset",
+          "sizeBytes": 10485760
+        },
+        {
+          "name": "ui-store-content-5.asset",
+          "path": "Assets/MarketingDemo/ui-store/content-5.asset",
+          "sizeBytes": 20971520
+        },
+        {
+          "name": "ui-store-content-6.asset",
+          "path": "Assets/MarketingDemo/ui-store/content-6.asset",
+          "sizeBytes": 31457280
+        },
+        {
+          "name": "ui-store-content-7.asset",
+          "path": "Assets/MarketingDemo/ui-store/content-7.asset",
+          "sizeBytes": 11534336
+        }
+      ]
+    },
+    {
+      "name": "ui_events.bundle",
+      "sizeBytes": 81788928,
+      "assets": [
+        {
+          "name": "Shared_Ui_IconAtlas.png",
+          "path": "Assets/UI/Shared/Shared_Ui_IconAtlas.png",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "ui-events-content-1.asset",
+          "path": "Assets/MarketingDemo/ui-events/content-1.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "ui-events-content-2.asset",
+          "path": "Assets/MarketingDemo/ui-events/content-2.asset",
+          "sizeBytes": 24117248
+        },
+        {
+          "name": "ui-events-content-3.asset",
+          "path": "Assets/MarketingDemo/ui-events/content-3.asset",
+          "sizeBytes": 35651584
+        },
+        {
+          "name": "ui-events-content-4.asset",
+          "path": "Assets/MarketingDemo/ui-events/content-4.asset",
+          "sizeBytes": 16777216
+        },
+        {
+          "name": "ui-events-content-5.asset",
+          "path": "Assets/MarketingDemo/ui-events/content-5.asset",
+          "sizeBytes": 28311552
+        },
+        {
+          "name": "ui-events-content-6.asset",
+          "path": "Assets/MarketingDemo/ui-events/content-6.asset",
+          "sizeBytes": 9437184
+        },
+        {
+          "name": "ui-events-content-7.asset",
+          "path": "Assets/MarketingDemo/ui-events/content-7.asset",
+          "sizeBytes": 20971520
+        }
+      ]
+    },
+    {
+      "name": "ui_settings.bundle",
+      "sizeBytes": 67108864,
+      "assets": [
+        {
+          "name": "Shared_Ui_IconAtlas.png",
+          "path": "Assets/UI/Shared/Shared_Ui_IconAtlas.png",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "ui-settings-content-1.asset",
+          "path": "Assets/MarketingDemo/ui-settings/content-1.asset",
+          "sizeBytes": 15728640
+        },
+        {
+          "name": "ui-settings-content-2.asset",
+          "path": "Assets/MarketingDemo/ui-settings/content-2.asset",
+          "sizeBytes": 28311552
+        },
+        {
+          "name": "ui-settings-content-3.asset",
+          "path": "Assets/MarketingDemo/ui-settings/content-3.asset",
+          "sizeBytes": 10485760
+        },
+        {
+          "name": "ui-settings-content-4.asset",
+          "path": "Assets/MarketingDemo/ui-settings/content-4.asset",
+          "sizeBytes": 23068672
+        },
+        {
+          "name": "ui-settings-content-5.asset",
+          "path": "Assets/MarketingDemo/ui-settings/content-5.asset",
+          "sizeBytes": 35651584
+        },
+        {
+          "name": "ui-settings-content-6.asset",
+          "path": "Assets/MarketingDemo/ui-settings/content-6.asset",
+          "sizeBytes": 17825792
+        },
+        {
+          "name": "ui-settings-content-7.asset",
+          "path": "Assets/MarketingDemo/ui-settings/content-7.asset",
+          "sizeBytes": 30408704
+        }
+      ]
+    },
+    {
+      "name": "avatar_core.bundle",
+      "sizeBytes": 398458880,
+      "assets": [
+        {
+          "name": "HeroCharacter_Common.mat",
+          "path": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "CommonShaderVariants.asset",
+          "path": "Assets/Rendering/CommonShaderVariants.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "avatar-core-content-1.asset",
+          "path": "Assets/MarketingDemo/avatar-core/content-1.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "avatar-core-content-2.asset",
+          "path": "Assets/MarketingDemo/avatar-core/content-2.asset",
+          "sizeBytes": 32505856
+        },
+        {
+          "name": "avatar-core-content-3.asset",
+          "path": "Assets/MarketingDemo/avatar-core/content-3.asset",
+          "sizeBytes": 15728640
+        },
+        {
+          "name": "avatar-core-content-4.asset",
+          "path": "Assets/MarketingDemo/avatar-core/content-4.asset",
+          "sizeBytes": 29360128
+        },
+        {
+          "name": "avatar-core-content-5.asset",
+          "path": "Assets/MarketingDemo/avatar-core/content-5.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "avatar-core-content-6.asset",
+          "path": "Assets/MarketingDemo/avatar-core/content-6.asset",
+          "sizeBytes": 26214400
+        },
+        {
+          "name": "avatar-core-content-7.asset",
+          "path": "Assets/MarketingDemo/avatar-core/content-7.asset",
+          "sizeBytes": 9437184
+        }
+      ]
+    },
+    {
+      "name": "avatar_customization.bundle",
+      "sizeBytes": 247463936,
+      "assets": [
+        {
+          "name": "HeroCharacter_Common.mat",
+          "path": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "avatar-customization-content-1.asset",
+          "path": "Assets/MarketingDemo/avatar-customization/content-1.asset",
+          "sizeBytes": 22020096
+        },
+        {
+          "name": "avatar-customization-content-2.asset",
+          "path": "Assets/MarketingDemo/avatar-customization/content-2.asset",
+          "sizeBytes": 36700160
+        },
+        {
+          "name": "avatar-customization-content-3.asset",
+          "path": "Assets/MarketingDemo/avatar-customization/content-3.asset",
+          "sizeBytes": 20971520
+        },
+        {
+          "name": "avatar-customization-content-4.asset",
+          "path": "Assets/MarketingDemo/avatar-customization/content-4.asset",
+          "sizeBytes": 35651584
+        },
+        {
+          "name": "avatar-customization-content-5.asset",
+          "path": "Assets/MarketingDemo/avatar-customization/content-5.asset",
+          "sizeBytes": 19922944
+        },
+        {
+          "name": "avatar-customization-content-6.asset",
+          "path": "Assets/MarketingDemo/avatar-customization/content-6.asset",
+          "sizeBytes": 34603008
+        },
+        {
+          "name": "avatar-customization-content-7.asset",
+          "path": "Assets/MarketingDemo/avatar-customization/content-7.asset",
+          "sizeBytes": 18874368
+        }
+      ]
+    },
+    {
+      "name": "avatar_shop.bundle",
+      "sizeBytes": 216006656,
+      "assets": [
+        {
+          "name": "HeroCharacter_Common.mat",
+          "path": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "avatar-shop-content-1.asset",
+          "path": "Assets/MarketingDemo/avatar-shop/content-1.asset",
+          "sizeBytes": 25165824
+        },
+        {
+          "name": "avatar-shop-content-2.asset",
+          "path": "Assets/MarketingDemo/avatar-shop/content-2.asset",
+          "sizeBytes": 10485760
+        },
+        {
+          "name": "avatar-shop-content-3.asset",
+          "path": "Assets/MarketingDemo/avatar-shop/content-3.asset",
+          "sizeBytes": 26214400
+        },
+        {
+          "name": "avatar-shop-content-4.asset",
+          "path": "Assets/MarketingDemo/avatar-shop/content-4.asset",
+          "sizeBytes": 11534336
+        },
+        {
+          "name": "avatar-shop-content-5.asset",
+          "path": "Assets/MarketingDemo/avatar-shop/content-5.asset",
+          "sizeBytes": 27262976
+        },
+        {
+          "name": "avatar-shop-content-6.asset",
+          "path": "Assets/MarketingDemo/avatar-shop/content-6.asset",
+          "sizeBytes": 12582912
+        },
+        {
+          "name": "avatar-shop-content-7.asset",
+          "path": "Assets/MarketingDemo/avatar-shop/content-7.asset",
+          "sizeBytes": 28311552
+        }
+      ]
+    },
+    {
+      "name": "avatar_events.bundle",
+      "sizeBytes": 180355072,
+      "assets": [
+        {
+          "name": "HeroCharacter_Common.mat",
+          "path": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "avatar-events-content-1.asset",
+          "path": "Assets/MarketingDemo/avatar-events/content-1.asset",
+          "sizeBytes": 28311552
+        },
+        {
+          "name": "avatar-events-content-2.asset",
+          "path": "Assets/MarketingDemo/avatar-events/content-2.asset",
+          "sizeBytes": 14680064
+        },
+        {
+          "name": "avatar-events-content-3.asset",
+          "path": "Assets/MarketingDemo/avatar-events/content-3.asset",
+          "sizeBytes": 31457280
+        },
+        {
+          "name": "avatar-events-content-4.asset",
+          "path": "Assets/MarketingDemo/avatar-events/content-4.asset",
+          "sizeBytes": 17825792
+        },
+        {
+          "name": "avatar-events-content-5.asset",
+          "path": "Assets/MarketingDemo/avatar-events/content-5.asset",
+          "sizeBytes": 34603008
+        },
+        {
+          "name": "avatar-events-content-6.asset",
+          "path": "Assets/MarketingDemo/avatar-events/content-6.asset",
+          "sizeBytes": 20971520
+        },
+        {
+          "name": "avatar-events-content-7.asset",
+          "path": "Assets/MarketingDemo/avatar-events/content-7.asset",
+          "sizeBytes": 37748736
+        }
+      ]
+    },
+    {
+      "name": "tutorial_scenes.bundle",
+      "sizeBytes": 213909504,
+      "assets": [
+        {
+          "name": "tutorial-scenes-content-1.asset",
+          "path": "Assets/MarketingDemo/tutorial-scenes/content-1.asset",
+          "sizeBytes": 31457280
+        },
+        {
+          "name": "tutorial-scenes-content-2.asset",
+          "path": "Assets/MarketingDemo/tutorial-scenes/content-2.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "tutorial-scenes-content-3.asset",
+          "path": "Assets/MarketingDemo/tutorial-scenes/content-3.asset",
+          "sizeBytes": 36700160
+        },
+        {
+          "name": "tutorial-scenes-content-4.asset",
+          "path": "Assets/MarketingDemo/tutorial-scenes/content-4.asset",
+          "sizeBytes": 24117248
+        },
+        {
+          "name": "tutorial-scenes-content-5.asset",
+          "path": "Assets/MarketingDemo/tutorial-scenes/content-5.asset",
+          "sizeBytes": 11534336
+        },
+        {
+          "name": "tutorial-scenes-content-6.asset",
+          "path": "Assets/MarketingDemo/tutorial-scenes/content-6.asset",
+          "sizeBytes": 29360128
+        },
+        {
+          "name": "tutorial-scenes-content-7.asset",
+          "path": "Assets/MarketingDemo/tutorial-scenes/content-7.asset",
+          "sizeBytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "seasonal_content.bundle",
+      "sizeBytes": 251658240,
+      "assets": [
+        {
+          "name": "seasonal-content-content-1.asset",
+          "path": "Assets/MarketingDemo/seasonal-content/content-1.asset",
+          "sizeBytes": 34603008
+        },
+        {
+          "name": "seasonal-content-content-2.asset",
+          "path": "Assets/MarketingDemo/seasonal-content/content-2.asset",
+          "sizeBytes": 23068672
+        },
+        {
+          "name": "seasonal-content-content-3.asset",
+          "path": "Assets/MarketingDemo/seasonal-content/content-3.asset",
+          "sizeBytes": 11534336
+        },
+        {
+          "name": "seasonal-content-content-4.asset",
+          "path": "Assets/MarketingDemo/seasonal-content/content-4.asset",
+          "sizeBytes": 30408704
+        },
+        {
+          "name": "seasonal-content-content-5.asset",
+          "path": "Assets/MarketingDemo/seasonal-content/content-5.asset",
+          "sizeBytes": 18874368
+        },
+        {
+          "name": "seasonal-content-content-6.asset",
+          "path": "Assets/MarketingDemo/seasonal-content/content-6.asset",
+          "sizeBytes": 37748736
+        },
+        {
+          "name": "seasonal-content-content-7.asset",
+          "path": "Assets/MarketingDemo/seasonal-content/content-7.asset",
+          "sizeBytes": 26214400
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "Assets/MarketingDemo/city-environment/content-1.asset",
+      "target": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png"
+    },
+    {
+      "source": "Assets/MarketingDemo/mall-environment/content-1.asset",
+      "target": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png"
+    },
+    {
+      "source": "Assets/MarketingDemo/cafe-environment/content-1.asset",
+      "target": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png"
+    },
+    {
+      "source": "Assets/MarketingDemo/park-environment/content-1.asset",
+      "target": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png"
+    },
+    {
+      "source": "Assets/MarketingDemo/beach-environment/content-1.asset",
+      "target": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png"
+    },
+    {
+      "source": "Assets/MarketingDemo/city-audio/content-1.asset",
+      "target": "Assets/Audio/Shared/Ambience/Ambience_City_Loop.wav"
+    },
+    {
+      "source": "Assets/MarketingDemo/mall-audio/content-1.asset",
+      "target": "Assets/Audio/Shared/Ambience/Ambience_City_Loop.wav"
+    },
+    {
+      "source": "Assets/MarketingDemo/cafe-audio/content-1.asset",
+      "target": "Assets/Audio/Shared/Ambience/Ambience_City_Loop.wav"
+    },
+    {
+      "source": "Assets/MarketingDemo/ui-core/content-1.asset",
+      "target": "Assets/UI/Shared/Shared_Ui_IconAtlas.png"
+    },
+    {
+      "source": "Assets/MarketingDemo/ui-store/content-1.asset",
+      "target": "Assets/UI/Shared/Shared_Ui_IconAtlas.png"
+    },
+    {
+      "source": "Assets/MarketingDemo/ui-events/content-1.asset",
+      "target": "Assets/UI/Shared/Shared_Ui_IconAtlas.png"
+    },
+    {
+      "source": "Assets/MarketingDemo/ui-settings/content-1.asset",
+      "target": "Assets/UI/Shared/Shared_Ui_IconAtlas.png"
+    },
+    {
+      "source": "Assets/MarketingDemo/avatar-core/content-1.asset",
+      "target": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat"
+    },
+    {
+      "source": "Assets/MarketingDemo/avatar-customization/content-1.asset",
+      "target": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat"
+    },
+    {
+      "source": "Assets/MarketingDemo/avatar-shop/content-1.asset",
+      "target": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat"
+    },
+    {
+      "source": "Assets/MarketingDemo/avatar-events/content-1.asset",
+      "target": "Assets/Characters/Shared/Materials/HeroCharacter_Common.mat"
+    },
+    {
+      "source": "Assets/MarketingDemo/city-environment/content-1.asset",
+      "target": "Assets/Rendering/CommonShaderVariants.asset"
+    },
+    {
+      "source": "Assets/MarketingDemo/mall-environment/content-1.asset",
+      "target": "Assets/Rendering/CommonShaderVariants.asset"
+    },
+    {
+      "source": "Assets/MarketingDemo/avatar-core/content-1.asset",
+      "target": "Assets/Rendering/CommonShaderVariants.asset"
+    },
+    {
+      "source": "Assets/MarketingDemo/avatar-core/content-2.asset",
+      "target": "Assets/Rendering/CommonShaderVariants.asset"
+    },
+    {
+      "source": "Assets/MarketingDemo/ui-store/content-3.asset",
+      "target": "Assets/UI/Shared/Shared_Ui_IconAtlas.png"
+    },
+    {
+      "source": "Assets/MarketingDemo/city-environment/content-4.asset",
+      "target": "Assets/Art/Shared/Textures/Environment_Atlas_4K.png"
+    }
+  ]
+}
