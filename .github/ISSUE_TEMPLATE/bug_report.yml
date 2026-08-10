@@ -1,0 +1,124 @@
+name: 🐛 Bug Report
+description: Something isn't working the way it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill in as much detail as you can — it makes a huge difference in how fast this gets fixed.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug. What did you expect instead?
+      placeholder: |
+        When I open the Duplicates tab after loading a JSON report, the window shows an empty table even though the Overview tab reports 12 duplicates.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The exact steps that trigger the bug.
+      placeholder: |
+        1. Open Tools → Addressables Build Inspector
+        2. Load Report → select a JSON report
+        3. Switch to the Duplicates tab
+        4. Table is empty
+      render: markdown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tab
+    attributes:
+      label: Which tab / feature is affected?
+      options:
+        - Overview
+        - Bundles
+        - Assets
+        - Duplicates
+        - Optimization
+        - Dependencies
+        - Build Diff
+        - AI Report
+        - Report loading (Load Report)
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: report_type
+    attributes:
+      label: Report format you're loading
+      options:
+        - Text Build Layout report
+        - JSON report
+        - Not applicable
+    validations:
+      required: true
+
+  - type: input
+    id: unity_version
+    attributes:
+      label: Unity version
+      placeholder: e.g. 2022.3.45f1
+    validations:
+      required: true
+
+  - type: input
+    id: package_version
+    attributes:
+      label: Addressables Build Inspector version
+      description: Check the Asset Store page or your import date if unsure.
+      placeholder: e.g. 1.0
+    validations:
+      required: false
+
+  - type: input
+    id: addressables_version
+    attributes:
+      label: Addressables package version
+      placeholder: e.g. 1.21.19
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors / stack trace
+      description: Paste any errors from the Unity Console (Window → General → Console). This helps a lot.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: report_sample
+    attributes:
+      label: Sample report (optional)
+      description: If possible, attach or paste a trimmed-down version of the report that reproduces the issue. Please remove anything sensitive/proprietary first.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked the [documentation](../../blob/main/Assets/AddressablesBuildInspector/Documentation/README.md) and this isn't covered there
+          required: false
+        - label: I searched existing issues and this hasn't been reported yet
+          required: true

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/proximummax/AddressablesUtility/blob/main/Assets/AddressablesBuildInspector/Documentation/README.md
+    about: Check the docs before opening an issue — your question might already be answered there.
+  - name: 🛒 Asset Store page
+    url: https://assetstore.unity.com/packages/tools/utilities/addressables-build-inspector-388716
+    about: Reviews, versioning, and release notes.

@@ -127,6 +127,10 @@ A practical first‑pass estimate of avoidable bundle growth caused by an asset 
 
 Have an idea? Open an [issue](../../issues) — feedback shapes what gets built next.
 
+## 🐛 Bug reports & feature requests
+
+Found something broken, or have an idea for a new tab/export/AI mode? Please [open an issue](../../issues/new/choose) — there are dedicated forms for **🐛 Bug Report** and **💡 Feature Request** that ask for exactly the details needed to act on it quickly (Unity version, report type, repro steps, etc).
+
 ## 🤝 Contributing
 
 Issues and PRs are welcome. If you're proposing a larger change, please open an issue first so we can align on the approach.
