@@ -12,7 +12,7 @@ Inspect build layout reports, hunt down duplicated assets, trace dependency chai
 [![No Dependencies](https://img.shields.io/badge/Dependencies-none-success)]()
 
 <!-- 💡 Replace with an actual screenshot or GIF of the Overview / Optimization tab -->
-<!-- <img src="docs/images/overview.png" width="800" alt="Addressables Build Inspector — Overview tab" /> -->
+<img src="docs/images/overview.png" width="800" alt="Addressables Build Inspector — Overview tab" />
 
 </div>
 
