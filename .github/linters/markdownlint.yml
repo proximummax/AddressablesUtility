@@ -1,0 +1,7 @@
+default: true
+
+# Long lines are fine — we don't hard-wrap prose by hand.
+MD013: false
+
+# We intentionally use inline HTML (e.g. <img width="...">) for layout control.
+MD033: false

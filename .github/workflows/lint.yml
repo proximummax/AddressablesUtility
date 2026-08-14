@@ -26,3 +26,4 @@ jobs:
           VALIDATE_YAML: true
           VALIDATE_GITHUB_ACTIONS: true
           VALIDATE_JSON: true
+          MARKDOWN_CONFIG_FILE: .markdownlint.yml

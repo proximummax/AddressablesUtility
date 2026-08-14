@@ -96,7 +96,7 @@ Size fields are matched flexibly (`sizeBytes`, `SizeBytes`, `FileSize`, `Size`, 
 
 ## Duplicate waste formula
 
-```
+```text
 EstimatedWaste = (BundleCount - 1) × AssetSize
 ```
 
