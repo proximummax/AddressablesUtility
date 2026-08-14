@@ -1,95 +1,79 @@
-<div align="center">
+# Addressables Build Inspector
 
-# 📦 Addressables Build Inspector
+Editor window for reading Unity Addressables build layout reports. Loads a report (text or JSON) and turns it into sortable tables, duplicate detection, a dependency tree, build-to-build diffing, and an offline prompt generator for handing the results to an LLM.
 
-**Understand your Unity Addressables build in minutes — not hours.**
-
-Inspect build layout reports, hunt down duplicated assets, trace dependency chains, diff two builds, and turn it all into AI‑ready prompts — all from one Editor window, with zero external dependencies.
-
+[![Lint](https://img.shields.io/github/actions/workflow/status/proximummax/AddressablesUtility/lint.yml?branch=main&label=lint)](https://github.com/proximummax/AddressablesUtility/actions/workflows/lint.yml)
+[![Security](https://img.shields.io/github/actions/workflow/status/proximummax/AddressablesUtility/security.yml?branch=main&label=security)](https://github.com/proximummax/AddressablesUtility/actions/workflows/security.yml)
 [![Unity](https://img.shields.io/badge/Unity-2022.3%2B-black?logo=unity&logoColor=white)](https://unity.com)
-[![Asset Store](https://img.shields.io/badge/Asset%20Store-Get%20it%20free-blue?logo=unity)](https://assetstore.unity.com/packages/tools/utilities/addressables-build-inspector-388716?aid=1100lebp8)
-[![Editor Only](https://img.shields.io/badge/Runtime-Editor--only-informational)]()
-[![No Dependencies](https://img.shields.io/badge/Dependencies-none-success)]()
 
-<!-- 💡 Replace with an actual screenshot or GIF of the Overview / Optimization tab -->
 <img src="docs/images/overview.png" width="800" alt="Addressables Build Inspector — Overview tab" />
 
-</div>
+## Why
 
----
+The stock Addressables build layout report is a large text file. Reading it by hand to find duplicated assets or to understand why something got included is slow, and doing that on every build is not realistic. This tool parses the report and gives you sortable views, duplicate ranking, dependency tracing, and diffing between two builds, so the questions that actually matter — what's bloating the build, what's duplicated, why is this asset here, what changed since last time — have direct answers instead of requiring manual digging.
 
-## Why this tool exists
+Editor-only, no runtime footprint, no external package dependencies.
 
-Addressables build reports are goldmines of information — and painful to read by hand. **Addressables Build Inspector** turns a raw build layout report (text or JSON) into a searchable, sortable Editor window that answers the questions that actually matter:
+## Features
 
-- Which bundles are eating my build size?
-- What's duplicated across bundles, and how much am I wasting because of it?
-- Why is this asset even included — what's pulling it in?
-- What changed between yesterday's build and today's?
-- Can I hand this to an LLM to get a second opinion?
-
-No setup, no package dependencies, no runtime footprint. Drop it in, load a report, and start optimizing.
-
-## ✨ Features
-
-| | |
+| Tab | What it does |
 |---|---|
-| 📊 **Overview** | Total build size, bundle & asset counts, duplicate count, estimated waste, largest bundle/asset at a glance |
-| 🧱 **Bundles** | Sortable table — name, size, asset count |
-| 🗂 **Assets** | Sortable table — name, path, size, bundle count |
-| 🧬 **Duplicates** | Every duplicated asset, ranked by estimated wasted size |
-| 🛠 **Optimization Advisor** | Classifies duplicate causes, recommends shared groups, simulates savings *non‑destructively*, exports CSV / JSON / Markdown |
-| 🔗 **Dependencies** | Full dependency tree + reverse references per asset, with circular‑reference safety |
-| 📈 **Build Diff** | Compare two reports: growth, count deltas, top‑growing bundles, added/removed/modified assets, ranked smart insights |
-| 🤖 **AI Report** | Generates offline, LLM‑ready prompts (Quick Review, Optimization Consultant, Build Growth Investigation, Duplicate Investigation, Technical Audit) — paste straight into your favorite AI assistant |
+| Overview | Total build size, bundle and asset counts, duplicate count, estimated waste, largest bundle/asset |
+| Bundles | Sortable table — name, size, asset count |
+| Assets | Sortable table — name, path, size, bundle count |
+| Duplicates | Every duplicated asset, ranked by estimated wasted size |
+| Optimization | Classifies duplicate causes, suggests shared groups, simulates savings without touching the project, exports CSV/JSON/Markdown |
+| Dependencies | Dependency tree and reverse references per asset, with circular-reference handling |
+| Build Diff | Compares two reports: growth, count deltas, top-growing bundles, added/removed/modified assets |
+| AI Report | Generates an offline, LLM-ready prompt from the loaded build data (several modes, see below) |
 
-All tables are click‑to‑sort. All exports (CSV / JSON / Markdown) happen locally — nothing leaves your machine.
+All tables are sortable by column. Exports run locally — nothing is sent anywhere.
 
-## 🚀 Installation
+## Installation
 
-**Option A — Unity Package**
+**Unity package**
 
-1. Download [`AddressablesUtility.unitypackage`](./AddressablesUtility.unitypackage) from this repo (or grab it free from the [Asset Store](https://assetstore.unity.com/packages/tools/utilities/addressables-build-inspector-388716?aid=1100lebp8)).
-2. `Assets → Import Package → Custom Package…` in your Unity project.
+1. Download `AddressablesUtility.unitypackage` from this repo, or get it from the [Asset Store](https://assetstore.unity.com/packages/tools/utilities/addressables-build-inspector-388716) (free).
+2. `Assets → Import Package → Custom Package…`
 
-**Option B — Copy the folder**
+**Copy the folder**
 
-Copy `Assets/AddressablesBuildInspector` into your project's `Assets` folder. That's it — the tool is Editor‑only and adds a single menu item.
+Copy `Assets/AddressablesBuildInspector` into your project's `Assets` folder. Editor-only, adds a single menu item.
 
 **Requirements**
 
-- Unity **2022.3** or newer
-- An Addressables Build Layout report (text or supported JSON) — see below
+- Unity 2022.3 or newer
+- An Addressables build layout report (text or JSON)
 - No runtime dependencies, no external packages
 
-## ⚡ Quick Start
+## Quick start
 
-1. Build your Addressables content and generate a Build Layout report (location depends on your Addressables package version/settings).
+1. Build your Addressables content to generate a build layout report.
 2. Open `Tools → Addressables Build Inspector`.
-3. Click **Load Report** and select the generated report.
-4. Start with **Overview → Duplicates → Optimization** to find quick wins.
-5. Use **Dependencies** to understand *why* something is pulled into your build.
-6. Use **Build Diff** to compare two reports over time and catch regressions before they ship.
+3. Click **Load Report** and select the report file.
+4. Check Overview, then Duplicates, then Optimization for the fastest wins.
+5. Use Dependencies to see why a specific asset is included.
+6. Use Build Diff to compare two reports and catch regressions before they ship.
 
-The window remembers your last successfully loaded report per‑user via `EditorPrefs`, so reopening it picks up right where you left off.
+The window remembers the last loaded report per user via `EditorPrefs`.
 
-> Want to try it without a real project? A synthetic sample report is included at `Assets/AddressablesBuildInspector/Samples/SampleBuildLayout.txt`, plus `_Old`/`_New` variants for testing Build Diff.
+A synthetic sample report is included at `Assets/AddressablesBuildInspector/Samples/SampleBuildLayout.txt`, with `_Old`/`_New` variants for testing Build Diff.
 
-## 🤖 AI Report — talk to your build
+## AI Report
 
-The **AI Report** tab turns your loaded build data into a structured, copy‑paste‑ready prompt for any LLM (Claude, ChatGPT, etc.) — entirely offline, no API keys, no data leaves the Editor.
+The AI Report tab turns the loaded build data into a structured prompt you can paste into an LLM. Generated entirely offline — no API calls, no data leaves the Editor.
 
 | Mode | Best for |
 |---|---|
-| Quick Review | A fast, high‑level pass over the build |
+| Quick Review | A fast, high-level pass over the build |
 | Optimization Consultant | Actionable recommendations to cut size |
-| Build Growth Investigation | Explaining *why* a build got bigger |
-| Duplicate Investigation | Deep dive into duplication root causes |
-| Technical Audit | A thorough, detail‑heavy report for reviewers |
+| Build Growth Investigation | Explaining why a build got bigger |
+| Duplicate Investigation | Root-causing duplication |
+| Technical Audit | A detailed report for reviewers |
 
-## 🧩 JSON report schema
+## JSON report schema
 
-If you're feeding in a JSON report instead of the native text layout, use this shape:
+If you're feeding in JSON instead of the native text layout:
 
 ```json
 {
@@ -108,45 +92,48 @@ If you're feeding in a JSON report instead of the native text layout, use this s
 }
 ```
 
-Size fields are flexible — `sizeBytes`, `SizeBytes`, `FileSize`, `Size`, or `TotalSize` are all recognized, since different report producers use different casing/naming.
+Size fields are matched flexibly (`sizeBytes`, `SizeBytes`, `FileSize`, `Size`, `TotalSize`) since different report producers use different naming.
 
-## 🧮 Duplicate waste formula
+## Duplicate waste formula
 
 ```
 EstimatedWaste = (BundleCount - 1) × AssetSize
 ```
 
-A practical first‑pass estimate of avoidable bundle growth caused by an asset being packed into more than one bundle.
+A first-pass estimate of avoidable bundle growth from an asset being packed into more than one bundle.
 
-## 🗺️ Roadmap
+## CI
 
-- [ ] Screenshots / short demo GIF in this README
-- [ ] UPM package support (`package.json` + git URL install)
-- [ ] Automated tests in CI
-- [ ] More AI report templates
+Every push and pull request to `main` runs:
 
-Have an idea? Open an [issue](../../issues) — feedback shapes what gets built next.
+- **Lint** — markdown, YAML, and GitHub Actions workflow validation
+- **Security** — [gitleaks](https://github.com/gitleaks/gitleaks) secret scanning across the diff and history
 
-## 🐛 Bug reports & feature requests
+Status badges are at the top of this file and link to the workflow runs.
 
-Found something broken, or have an idea for a new tab/export/AI mode? Please [open an issue](../../issues/new/choose) — there are dedicated forms for **🐛 Bug Report** and **💡 Feature Request** that ask for exactly the details needed to act on it quickly (Unity version, report type, repro steps, etc).
+## Roadmap
 
-## 🤝 Contributing
+- Screenshots/demo GIF for each tab
+- UPM package support (`package.json` + git URL install)
+- Automated EditMode tests in CI
+- More AI report templates
 
-Issues and PRs are welcome. If you're proposing a larger change, please open an issue first so we can align on the approach.
+Ideas and requests: [open an issue](../../issues).
 
-## 📄 License
+## Bug reports and feature requests
 
-See the [Asset Store EULA](https://unity.com/legal/as-terms) for the packaged release. *(A repository license file is planned — until then, treat this repo as source‑available for reference alongside the Asset Store listing.)*
+[Open an issue](../../issues/new/choose) — there are separate forms for bug reports and feature requests that ask for the details needed to act on them (Unity version, report type, repro steps, etc).
 
-## 🔗 Links
+## Contributing
 
-- 🛒 [Asset Store listing](https://assetstore.unity.com/packages/tools/utilities/addressables-build-inspector-388716?aid=1100lebp8) — free
-- 📚 [Full documentation](Assets/AddressablesBuildInspector/Documentation/README.md)
-- 🛠 [Setup guide](Assets/AddressablesBuildInspector/Documentation/Setup.md)
+Issues and PRs are welcome. For larger changes, open an issue first to align on the approach.
 
----
+## License
 
-<div align="center">
-Made by <a href="https://assetstore.unity.com/publishers/149966">Proximum</a> · If this saved you a build‑size headache, a ⭐ on the repo goes a long way.
-</div>
+See the [Asset Store EULA](https://unity.com/legal/as-terms) for the packaged release. A repository license file is planned; until then, treat this repo as source-available alongside the Asset Store listing.
+
+## Links
+
+- [Asset Store listing](https://assetstore.unity.com/packages/tools/utilities/addressables-build-inspector-388716) (free)
+- [Full documentation](Assets/AddressablesBuildInspector/Documentation/README.md)
+- [Setup guide](Assets/AddressablesBuildInspector/Documentation/Setup.md)
