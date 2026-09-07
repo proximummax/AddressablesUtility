@@ -1,0 +1,23 @@
+{
+  "name": "com.proximummax.addressables-build-inspector",
+  "displayName": "Addressables Build Inspector",
+  "version": "1.0.1",
+  "unity": "2022.3",
+  "description": "Editor tool to analyze Addressables build layout reports: overview, duplicates, dependencies, build diff, and offline AI-ready optimization prompts.",
+  "keywords": [
+    "addressables",
+    "build",
+    "inspector",
+    "optimization",
+    "editor"
+  ],
+  "author": {
+    "name": "proximummax"
+  },
+  "license": "Unity Asset Store EULA",
+  "documentationUrl": "https://github.com/proximummax/AddressablesUtility",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/proximummax/AddressablesUtility.git"
+  }
+}

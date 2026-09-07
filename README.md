@@ -31,6 +31,18 @@ All tables are sortable by column. Exports run locally — nothing is sent anywh
 
 ## Installation
 
+**UPM (Git URL) — recommended**
+
+In `Packages/manifest.json`:
+
+```json
+"com.proximummax.addressables-build-inspector": "https://github.com/proximummax/AddressablesUtility.git?path=/Assets/AddressablesBuildInspector#v1.0.1"
+```
+
+To bump: change the `#v1.0.1` revision to the new tag (e.g. `#v1.0.2`), then let Package Manager re-resolve.
+
+Or in the Editor: Window → Package Manager → + → Add package from git URL… and paste the same URL (including `?path=/Assets/AddressablesBuildInspector`).
+
 **Unity package**
 
 1. Download `AddressablesUtility.unitypackage` from this repo, or get it from the [Asset Store](https://assetstore.unity.com/packages/tools/utilities/addressables-build-inspector-388716) (free).
@@ -114,7 +126,6 @@ Status badges are at the top of this file and link to the workflow runs.
 ## Roadmap
 
 - Screenshots/demo GIF for each tab
-- UPM package support (`package.json` + git URL install)
 - Automated EditMode tests in CI
 - More AI report templates
 
